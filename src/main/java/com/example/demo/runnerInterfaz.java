@@ -31,10 +31,10 @@ public class runnerInterfaz extends Application {
         controller.init(ctx);
 
         // 5) Escena/ventana
-        Scene scene = new Scene(root, 1240, 950);
+        Scene scene = new Scene(root, 1024, 768);
         stage.setTitle("Monitoring center!");
         stage.setScene(scene);
-        stage.setResizable(false); // ponelo en true si querés hacerlo responsive
+        stage.setResizable(true); // ponelo en true si querés hacerlo responsive
 
         // 6) Persistencia al salir
         stage.setOnCloseRequest(e -> ctx.saveOnExit());

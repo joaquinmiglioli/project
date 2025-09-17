@@ -27,10 +27,14 @@ public final class AppContext {
 
         // Listener que emite PDF automáticamente:
         this.fineEmissionService.start();
+        // Iniciar simulación de multas (velocidad, parking, semáforo en rojo)
+        this.fineEmissionService.startSimulation();
     }
 
     /** Llamar al cerrar la app. */
     public void saveOnExit() {
+        // Detener la simulación
+        this.fineEmissionService.stopSimulation();
         // Refrescar el array persistible con lo que esté en el servicio
         state.violations = violationService.exportAll();
         // Guardar snapshot
