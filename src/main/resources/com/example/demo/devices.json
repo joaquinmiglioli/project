@@ -1,0 +1,712 @@
+{
+  "semaphoreControllers": [
+    {
+      "id": "Semaphore 1",
+      "lat": -37.986655,
+      "lng": -57.545121,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Necochea",
+        "orientation": "E",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 2",
+      "lat": -37.987441,
+      "lng": -57.545748,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Ituzaingo",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 3",
+      "lat": -37.988236,
+      "lng": -57.546387,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Ayacucho",
+        "orientation": "E",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 4",
+      "lat": -37.989022,
+      "lng": -57.547041,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Chacabuco",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 5",
+      "lat": -37.989804,
+      "lng": -57.54769,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Maipu",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 6",
+      "lat": -37.990667,
+      "lng": -57.548361,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Libertad",
+        "orientation": "EW",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 7",
+      "lat": -37.991508,
+      "lng": -57.549058,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Balcarce",
+        "orientation": "E",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 8",
+      "lat": -37.992303,
+      "lng": -57.549691,
+      "status": "ERROR",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "11 de Septiembre",
+        "orientation": "E",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 9",
+      "lat": -37.993081,
+      "lng": -57.550319,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "3 de Febrero",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 10",
+      "lat": -37.993876,
+      "lng": -57.550968,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "9 de Julio",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 11",
+      "lat": -37.994696,
+      "lng": -57.551606,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "25 de Mayo",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 12",
+      "lat": -37.995558,
+      "lng": -57.55232,
+      "status": "ERROR",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Luro",
+        "orientation": "EW",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 13",
+      "lat": -37.996391,
+      "lng": -57.553006,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "San Martin",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 14",
+      "lat": -37.997186,
+      "lng": -57.553639,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Rivadavia",
+        "orientation": "W",
+        "status": "YELLOW",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 15",
+      "lat": -37.997947,
+      "lng": -57.554229,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Belgrano",
+        "orientation": "E",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 16",
+      "lat": -37.998758,
+      "lng": -57.554905,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Moreno",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 17",
+      "lat": -37.999494,
+      "lng": -57.555549,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Bolivar",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 18",
+      "lat": -38.000407,
+      "lng": -57.556236,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Av. Colón",
+        "orientation": "EW",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 19",
+      "lat": -38.001252,
+      "lng": -57.556922,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Brown",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 20",
+      "lat": -38.00203,
+      "lng": -57.557566,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Falucho",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 21",
+      "lat": -38.002842,
+      "lng": -57.55821,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Gascón",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 22",
+      "lat": -38.003628,
+      "lng": -57.558832,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Alberti",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 23",
+      "lat": -38.004431,
+      "lng": -57.559497,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Rawson",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 24",
+      "lat": -38.005226,
+      "lng": -57.56012,
+      "status": "YELLOW",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "YELLOW",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Garay",
+        "orientation": "E",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 25",
+      "lat": -38.005987,
+      "lng": -57.560785,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Castelli",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 26",
+      "lat": -38.006798,
+      "lng": -57.561386,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Alvarado",
+        "orientation": "E",
+        "status": "YELLOW",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 27",
+      "lat": -38.007593,
+      "lng": -57.562029,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Independencia",
+        "orientation": "NS",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Avellaneda",
+        "orientation": "W",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 28",
+      "lat": -37.998758,
+      "lng": -57.550528,
+      "status": "GREEN",
+      "semA": {
+        "id": "A",
+        "street": "Rivadavia",
+        "orientation": "W",
+        "status": "GREEN",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "H. Yrigoyen",
+        "orientation": "N",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 29",
+      "lat": -37.999249,
+      "lng": -57.549562,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Rivadavia",
+        "orientation": "W",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Mitre",
+        "orientation": "S",
+        "status": "RED",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 30",
+      "lat": -37.999764,
+      "lng": -57.548575,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Rivadavia",
+        "orientation": "W",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "San Luis",
+        "orientation": "S",
+        "status": "GREEN",
+        "main": false
+      }
+    },
+    {
+      "id": "Semaphore 31",
+      "lat": -38.000272,
+      "lng": -57.547567,
+      "status": "RED",
+      "semA": {
+        "id": "A",
+        "street": "Rivadavia",
+        "orientation": "W",
+        "status": "RED",
+        "main": true
+      },
+      "semB": {
+        "id": "B",
+        "street": "Córdoba",
+        "orientation": "N",
+        "status": "RED",
+        "main": false
+      }
+    }
+  ],
+  "radars": [
+    {
+      "id": "Radar 1",
+      "lat": -37.991309,
+      "lng": -57.54526,
+      "status": "READY"
+    },
+    {
+      "id": "Radar 2",
+      "lat": -38.034774,
+      "lng": -57.537503,
+      "status": "READY"
+    },
+    {
+      "id": "Radar 3",
+      "lat": -38.034132,
+      "lng": -57.541151,
+      "status": "ERROR"
+    },
+    {
+      "id": "Radar 4",
+      "lat": -37.995157,
+      "lng": -57.553028,
+      "status": "READY"
+    },
+    {
+      "id": "Radar 5",
+      "lat": -37.998851,
+      "lng": -57.545764,
+      "status": "ERROR"
+    }
+  ],
+  "securityCameras": [
+    {
+      "id": "Camera 1",
+      "lat": -38.002148,
+      "lng": -57.552695,
+      "status": "ERROR"
+    },
+    {
+      "id": "Camera 2",
+      "lat": -37.998327,
+      "lng": -57.548833,
+      "status": "READY"
+    },
+    {
+      "id": "Camera 3",
+      "lat": -38.005462,
+      "lng": -57.542782,
+      "status": "ERROR"
+    },
+    {
+      "id": "Camera 4",
+      "lat": -37.997304,
+      "lng": -57.546666,
+      "status": "ERROR"
+    }
+  ],
+    "parkingCameras": [
+    {
+      "id": "Parking Camera 1",
+      "lat": -37.997854,
+      "lng": -57.551215,
+	  "toleranceTime": 360,
+      "status": "READY"
+    },
+    {
+      "id": "Parking Camera 2",
+      "lat": -38.000305,
+      "lng": -57.55394,
+	  "toleranceTime": 300,
+      "status": "READY"
+    },
+    {
+      "id": "Parking Camera 3",
+      "lat": -38.002115,
+      "lng": -57.548296,
+	  "toleranceTime": 420,
+      "status": "ERROR"
+    },
+    {
+      "id": "Parking Camera 4",
+      "lat": -38.003095,
+      "lng": -57.546344,
+	  "toleranceTime": 330,
+      "status": "ERROR"
+    }
+  ]
+}

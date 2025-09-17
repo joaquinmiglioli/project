@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet desde CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    html, body, #map { height:100%; width:100%; margin:0; padding:0; }
+    .marker-semaforo { background:#7c3aed; border-radius:50%; width:14px; height:14px; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,.25); }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+  // 1) Crear mapa centrado (MDP por defecto)
+  const map = L.map('map', { zoomControl: true }).setView([-37.993, -57.549], 14);
+
+  // 2) Capa base OSM
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 20,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  // 3) Íconos
+  const ICONS = {
+    cam: L.icon({
+      iconUrl: '../Images/CameraPhoto.png',
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -24]
+    }),
+    radar: L.icon({
+      iconUrl: '../Images/RadarPhoto.png',
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -24]
+    }),
+    park: L.icon({
+      iconUrl: '../Images/CameraPhoto2.png',
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -24]
+    }),
+    // semáforo por ahora como círculo (cuando tengas PNGs, pasamos a L.marker)
+    semDiv: L.divIcon({ className:'marker-semaforo', iconSize:[18,18] })
+  };
+
+  // 4) Capas
+  const groups = {
+    semaphores: L.layerGroup().addTo(map),
+    radars:     L.layerGroup().addTo(map),
+    security:   L.layerGroup().addTo(map),
+    parking:    L.layerGroup().addTo(map)
+  };
+
+  function popupHtml(id, title, extra){
+    return `<b>${title}</b><br/><small>${id}</small>${extra?'<br/>'+extra:''}`;
+  }
+
+  // 5) API para Java
+  window.setView = function(lat, lng, zoom){ map.setView([lat,lng], zoom); }
+
+  window.addDevices = function(jsonText){
+    let data;
+    try { data = JSON.parse(jsonText); }
+    catch(e){ console.error("JSON inválido:", e); return; }
+
+    // Limpio
+    Object.values(groups).forEach(g => g.clearLayers());
+
+    // a) Semáforos (intersecciones)
+    (data.semaphoreControllers || []).forEach(sc => {
+      if (typeof sc.lat !== 'number' || typeof sc.lng !== 'number') return;
+      // color por status
+      const st = (sc.status || 'RED').toUpperCase();
+      const color = st === 'GREEN' ? '#22c55e' : st === 'YELLOW' ? '#facc15' : st === 'ERROR' ? '#7c3aed' : '#ef4444';
+      const m = L.circleMarker([sc.lat, sc.lng], { radius: 7, color, fillColor: color, fillOpacity: 0.9 })
+        .on('click', () => {
+          if (window.javaBridge && typeof window.javaBridge.onMarkerClick === 'function') {
+            window.javaBridge.onMarkerClick(sc.id);
+          }
+        })
+        .bindPopup(popupHtml(sc.id, 'Semaphore', st));
+      m.addTo(groups.semaphores);
+    });
+
+    // b) Radares
+    (data.radars || []).forEach(r => {
+  if (typeof r.lat !== 'number' || typeof r.lng !== 'number') return;
+  const m = L.marker([r.lat, r.lng], { icon: ICONS.radar })
+    .on('click', () => {
+      if (window.javaBridge?.onMarkerClick) window.javaBridge.onMarkerClick(r.id);
+    })
+    .bindPopup(popupHtml(r.id, 'Radar', r.status || ''));
+  m.addTo(groups.radars);
+});
+
+// c) Cámaras de seguridad
+(data.securityCameras || []).forEach(c => {
+  if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
+  const m = L.marker([c.lat, c.lng], { icon: ICONS.cam })
+    .on('click', () => {
+      if (window.javaBridge?.onSecurityCameraClick) window.javaBridge.onSecurityCameraClick(c.id);
+      else if (window.javaBridge?.onMarkerClick)     window.javaBridge.onMarkerClick(c.id);
+    })
+    .bindPopup(popupHtml(c.id, 'Security Camera', c.status || ''));
+  m.addTo(groups.security);
+});
+
+// d) Cámaras de estacionamiento
+(data.parkingCameras || []).forEach(p => {
+  if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+  const m = L.marker([p.lat, p.lng], { icon: ICONS.park })
+    .on('click', () => {
+      if (window.javaBridge?.onMarkerClick) window.javaBridge.onMarkerClick(p.id);
+    })
+    .bindPopup(popupHtml(p.id, 'Parking Camera', `tol: ${p.toleranceTime||'-'}s • ${p.status||''}`));
+  m.addTo(groups.parking);
+});
+  };
+</script>
+</body>
+</html>
