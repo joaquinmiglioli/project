@@ -10,7 +10,7 @@ public class Car {
     private String colour;
 
     private CarBrand brand;        // opcional: marca
-    private Model model;           // opcional: modelo
+    private Model model;           // opcional: modeloo
 
     public Car() {}
 
