@@ -3,6 +3,7 @@ package com.example.demo.services;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /** Registro sencillo de direcciones por dispositivo (RAD-1, PK-3, INT-5, CAM-2, etc.). */
 public class DeviceRegistry {
@@ -61,5 +62,10 @@ public class DeviceRegistry {
     /** Siempre devuelve algo: si no está configurado, devuelve un texto explícito. */
     public String addressFor(String deviceId) {
         return addressById.getOrDefault(deviceId, "SIN DIRECCIÓN (“" + deviceId + "”)");
+    }
+
+    /** Devuelve todos los IDs de dispositivos registrados. */
+    public Set<String> getAllDeviceIds() {
+        return addressById.keySet();
     }
 }

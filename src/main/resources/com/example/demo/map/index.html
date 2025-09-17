@@ -22,10 +22,14 @@
   const map = L.map('map', { zoomControl: true }).setView([-37.993, -57.549], 14);
 
   // 2) Capa base OSM
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 20,
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+  // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  //   maxZoom: 20,
+  //   attribution: '&copy; OpenStreetMap'
+  // }).addTo(map);
+  // L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; Stadia Maps' }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; CartoDB' }).addTo(map);
+  // L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20, attribution: '&copy; Esri' }).addTo(map);
+
 
   // 3) Íconos
   const ICONS = {
