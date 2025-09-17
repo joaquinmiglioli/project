@@ -19,7 +19,7 @@ public class runnerInterfaz extends Application {
 
         // 2) Resolver la ruta del FXML y validar que exista
         URL fxmlUrl = runnerInterfaz.class.getResource("/com/example/demo/Interfaz.fxml");
-        // Si esto da null, la ruta del FXML no es correcta o el archivo no está en resources
+        // Si esto da null, la ruta del FXML no es correcta o el archivo no está en resources...
         Objects.requireNonNull(fxmlUrl, "No encontré /com/example/demo/Interfaz.fxml en resources");
 
         // 3) Cargar el FXML
