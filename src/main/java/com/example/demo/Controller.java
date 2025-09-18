@@ -3,6 +3,7 @@ package com.example.demo;
 import com.example.demo.core.AppContext;
 import com.example.demo.map.MapView;
 import com.example.demo.services.ViolationService;
+import com.example.demo.ui.ToggleSwitch;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.SequentialTransition;
@@ -41,6 +42,13 @@ public class Controller {
     @FXML private Label      toastMap;
 
     @FXML private MenuItem menuViolationsView, menuReports;
+
+    @FXML private ToggleSwitch swMap;
+    @FXML private ToggleSwitch swSemaphores;
+    @FXML private ToggleSwitch swRadars;
+    @FXML private ToggleSwitch swCameras;
+    @FXML private ToggleSwitch swFails;
+
 
     // Mapa web (Leaflet)
     private MapView mapView;
@@ -111,8 +119,15 @@ public class Controller {
                 }
                 String raw = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
                 mapView.addDevices(raw); // pincha marcadores
-                // Si querés fijar el centro/zoom siempre:
-                // mapView.setView(-37.991, -57.549, 15);
+
+                // Sincronizar el estado inicial de los toggles con el mapa
+                // NOTA: esto asume que MapView tiene métodos para actuar sobre el mapa JS
+                if (swMap != null) mapView.setAllDevicesVisible(swMap.isSelected());
+                if (swSemaphores != null) mapView.setGroupVisible("semaphores", swSemaphores.isSelected());
+                if (swRadars != null) mapView.setGroupVisible("radars", swRadars.isSelected());
+                if (swCameras != null) mapView.setGroupVisible("cameras", swCameras.isSelected());
+                if (swFails != null) mapView.setGroupVisible("fails", swFails.isSelected());
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -129,6 +144,30 @@ public class Controller {
         AnchorPane.setBottomAnchor(mapView, 0.0);
         AnchorPane.setLeftAnchor(mapView, 0.0);
         mapLayer.getChildren().add(0, mapView);
+
+        // Listeners para los ToggleSwitch de filtros del mapa
+        // NOTA: esto asume que MapView tiene métodos para actuar sobre el mapa JS
+        if (swSemaphores != null) {
+            swSemaphores.setSelected(true);
+            swSemaphores.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("semaphores", n));
+        }
+        if (swRadars != null) {
+            swRadars.setSelected(true);
+            swRadars.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("radars", n));
+        }
+        if (swCameras != null) {
+            swCameras.setSelected(true);
+            swCameras.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("cameras", n));
+        }
+        if (swFails != null) {
+            swFails.setSelected(false);
+            swFails.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("fails", n));
+        }
+        if (swMap != null) {
+            swMap.setSelected(true);
+            swMap.selectedProperty().addListener((obs, o, n) -> mapView.setAllDevicesVisible(n));
+        }
+
 
         // botones overlay
         if (btnPolice != null)    btnPolice.setOnAction(e -> serviceClicked("POLICE"));

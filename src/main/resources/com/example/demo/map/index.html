@@ -22,45 +22,22 @@
   const map = L.map('map', { zoomControl: true }).setView([-37.993, -57.549], 14);
 
   // 2) Capa base OSM
-  // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  //   maxZoom: 20,
-  //   attribution: '&copy; OpenStreetMap'
-  // }).addTo(map);
-  // L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; Stadia Maps' }).addTo(map);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; CartoDB' }).addTo(map);
-  // L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20, attribution: '&copy; Esri' }).addTo(map);
-
 
   // 3) Íconos
   const ICONS = {
-    cam: L.icon({
-      iconUrl: '../Images/CameraPhoto.png',
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
-      popupAnchor: [0, -24]
-    }),
-    radar: L.icon({
-      iconUrl: '../Images/RadarPhoto.png',
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
-      popupAnchor: [0, -24]
-    }),
-    park: L.icon({
-      iconUrl: '../Images/CameraPhoto2.png',
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
-      popupAnchor: [0, -24]
-    }),
-    // semáforo por ahora como círculo (cuando tengas PNGs, pasamos a L.marker)
+    cam: L.icon({ iconUrl: '../Images/CameraPhoto.png', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -24] }),
+    radar: L.icon({ iconUrl: '../Images/RadarPhoto.png', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -24] }),
+    park: L.icon({ iconUrl: '../Images/CameraPhoto2.png', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -24] }),
     semDiv: L.divIcon({ className:'marker-semaforo', iconSize:[18,18] })
   };
 
-  // 4) Capas
-  const groups = {
-    semaphores: L.layerGroup().addTo(map),
-    radars:     L.layerGroup().addTo(map),
-    security:   L.layerGroup().addTo(map),
-    parking:    L.layerGroup().addTo(map)
+  // 4) Capas para filtrado por tipo y estado
+  const layerGroups = {
+    semaphores: L.layerGroup(),
+    radars:     L.layerGroup(),
+    cameras:    L.layerGroup(), // Agrupa security y parking
+    fails:      L.layerGroup()  // Agrupa todos los dispositivos con fallas
   };
 
   function popupHtml(id, title, extra){
@@ -68,65 +45,99 @@
   }
 
   // 5) API para Java
+
+  /** Centra el mapa en (lat, lng) con zoom dado */
   window.setView = function(lat, lng, zoom){ map.setView([lat,lng], zoom); }
 
+  /** Muestra/oculta un grupo de marcadores (layerGroup) */
+  window.setGroupVisible = function(groupName, visible) {
+    const group = layerGroups[groupName];
+    if (!group) {
+      console.warn('setGroupVisible: grupo desconocido:', groupName);
+      return;
+    }
+    if (visible) {
+      map.addLayer(group);
+    } else {
+      map.removeLayer(group);
+    }
+  };
+
+  /** Muestra/oculta TODOS los marcadores de dispositivos */
+  window.setAllDevicesVisible = function(visible) {
+    for (const key in layerGroups) {
+      window.setGroupVisible(key, visible);
+    }
+  };
+
+  /**
+   * Recibe un JSON, limpia las capas y crea todos los marcadores, 
+   * asignándolos a los grupos (layerGroups) correspondientes.
+   */
   window.addDevices = function(jsonText){
     let data;
     try { data = JSON.parse(jsonText); }
     catch(e){ console.error("JSON inválido:", e); return; }
 
-    // Limpio
-    Object.values(groups).forEach(g => g.clearLayers());
+    // Limpio capas existentes
+    Object.values(layerGroups).forEach(g => g.clearLayers());
+
+    // Helper para determinar si un dispositivo está en falla
+    const isFail = (status) => status && status.toUpperCase() !== 'NORMAL' && status.toUpperCase() !== 'OK' && status.toUpperCase() !== 'GREEN' && status.toUpperCase() !== 'YELLOW' && status.toUpperCase() !== 'RED';
 
     // a) Semáforos (intersecciones)
     (data.semaphoreControllers || []).forEach(sc => {
       if (typeof sc.lat !== 'number' || typeof sc.lng !== 'number') return;
-      // color por status
       const st = (sc.status || 'RED').toUpperCase();
       const color = st === 'GREEN' ? '#22c55e' : st === 'YELLOW' ? '#facc15' : st === 'ERROR' ? '#7c3aed' : '#ef4444';
       const m = L.circleMarker([sc.lat, sc.lng], { radius: 7, color, fillColor: color, fillOpacity: 0.9 })
-        .on('click', () => {
-          if (window.javaBridge && typeof window.javaBridge.onMarkerClick === 'function') {
-            window.javaBridge.onMarkerClick(sc.id);
-          }
-        })
+        .on('click', () => window.javaBridge?.onMarkerClick?.(sc.id))
         .bindPopup(popupHtml(sc.id, 'Semaphore', st));
-      m.addTo(groups.semaphores);
+
+      m.addTo(layerGroups.semaphores);
+      if (st === 'ERROR') { // 'ERROR' es un estado de falla explícito para semáforos
+          m.addTo(layerGroups.fails);
+      }
     });
 
     // b) Radares
     (data.radars || []).forEach(r => {
-  if (typeof r.lat !== 'number' || typeof r.lng !== 'number') return;
-  const m = L.marker([r.lat, r.lng], { icon: ICONS.radar })
-    .on('click', () => {
-      if (window.javaBridge?.onMarkerClick) window.javaBridge.onMarkerClick(r.id);
-    })
-    .bindPopup(popupHtml(r.id, 'Radar', r.status || ''));
-  m.addTo(groups.radars);
-});
+      if (typeof r.lat !== 'number' || typeof r.lng !== 'number') return;
+      const m = L.marker([r.lat, r.lng], { icon: ICONS.radar })
+        .on('click', () => window.javaBridge?.onMarkerClick?.(r.id))
+        .bindPopup(popupHtml(r.id, 'Radar', r.status || ''));
 
-// c) Cámaras de seguridad
-(data.securityCameras || []).forEach(c => {
-  if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
-  const m = L.marker([c.lat, c.lng], { icon: ICONS.cam })
-    .on('click', () => {
-      if (window.javaBridge?.onSecurityCameraClick) window.javaBridge.onSecurityCameraClick(c.id);
-      else if (window.javaBridge?.onMarkerClick)     window.javaBridge.onMarkerClick(c.id);
-    })
-    .bindPopup(popupHtml(c.id, 'Security Camera', c.status || ''));
-  m.addTo(groups.security);
-});
+      m.addTo(layerGroups.radars);
+      if (isFail(r.status)) {
+          m.addTo(layerGroups.fails);
+      }
+    });
 
-// d) Cámaras de estacionamiento
-(data.parkingCameras || []).forEach(p => {
-  if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
-  const m = L.marker([p.lat, p.lng], { icon: ICONS.park })
-    .on('click', () => {
-      if (window.javaBridge?.onMarkerClick) window.javaBridge.onMarkerClick(p.id);
-    })
-    .bindPopup(popupHtml(p.id, 'Parking Camera', `tol: ${p.toleranceTime||'-'}s • ${p.status||''}`));
-  m.addTo(groups.parking);
-});
+    // c) Cámaras de seguridad
+    (data.securityCameras || []).forEach(c => {
+      if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
+      const m = L.marker([c.lat, c.lng], { icon: ICONS.cam })
+        .on('click', () => window.javaBridge?.onSecurityCameraClick?.(c.id) || window.javaBridge?.onMarkerClick?.(c.id))
+        .bindPopup(popupHtml(c.id, 'Security Camera', c.status || ''));
+
+      m.addTo(layerGroups.cameras);
+      if (isFail(c.status)) {
+          m.addTo(layerGroups.fails);
+      }
+    });
+
+    // d) Cámaras de estacionamiento
+    (data.parkingCameras || []).forEach(p => {
+      if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
+      const m = L.marker([p.lat, p.lng], { icon: ICONS.park })
+        .on('click', () => window.javaBridge?.onMarkerClick?.(p.id))
+        .bindPopup(popupHtml(p.id, 'Parking Camera', `tol: ${p.toleranceTime||'-'}s • ${p.status||''}`));
+
+      m.addTo(layerGroups.cameras); // Se agregan al grupo 'cameras'
+      if (isFail(p.status)) {
+          m.addTo(layerGroups.fails);
+      }
+    });
   };
 </script>
 </body>
