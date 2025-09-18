@@ -118,15 +118,21 @@ public class Controller {
                     return;
                 }
                 String raw = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                mapView.addDevices(raw); // pincha marcadores
+                mapView.addDevices(raw); // 1. Cargar marcadores en las capas JS
 
-                // Sincronizar el estado inicial de los toggles con el mapa
-                // NOTA: esto asume que MapView tiene métodos para actuar sobre el mapa JS
+                // 2. Sincronizar la visibilidad inicial del mapa con el estado de los toggles
                 if (swMap != null) mapView.setAllDevicesVisible(swMap.isSelected());
                 if (swSemaphores != null) mapView.setGroupVisible("semaphores", swSemaphores.isSelected());
                 if (swRadars != null) mapView.setGroupVisible("radars", swRadars.isSelected());
                 if (swCameras != null) mapView.setGroupVisible("cameras", swCameras.isSelected());
                 if (swFails != null) mapView.setGroupVisible("fails", swFails.isSelected());
+
+                // 3. Ahora que el estado está sincronizado, añadir los listeners para futuras acciones del usuario
+                if (swMap != null) swMap.selectedProperty().addListener((obs, o, n) -> mapView.setAllDevicesVisible(n));
+                if (swSemaphores != null) swSemaphores.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("semaphores", n));
+                if (swRadars != null) swRadars.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("radars", n));
+                if (swCameras != null) swCameras.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("cameras", n));
+                if (swFails != null) swFails.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("fails", n));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -145,29 +151,12 @@ public class Controller {
         AnchorPane.setLeftAnchor(mapView, 0.0);
         mapLayer.getChildren().add(0, mapView);
 
-        // Listeners para los ToggleSwitch de filtros del mapa
-        // NOTA: esto asume que MapView tiene métodos para actuar sobre el mapa JS
-        if (swSemaphores != null) {
-            swSemaphores.setSelected(true);
-            swSemaphores.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("semaphores", n));
-        }
-        if (swRadars != null) {
-            swRadars.setSelected(true);
-            swRadars.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("radars", n));
-        }
-        if (swCameras != null) {
-            swCameras.setSelected(true);
-            swCameras.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("cameras", n));
-        }
-        if (swFails != null) {
-            swFails.setSelected(false);
-            swFails.selectedProperty().addListener((obs, o, n) -> mapView.setGroupVisible("fails", n));
-        }
-        if (swMap != null) {
-            swMap.setSelected(true);
-            swMap.selectedProperty().addListener((obs, o, n) -> mapView.setAllDevicesVisible(n));
-        }
-
+        // Establecer el estado inicial de los toggles. NO añadir listeners aquí.
+        if (swMap != null) swMap.setSelected(true);
+        if (swSemaphores != null) swSemaphores.setSelected(true);
+        if (swRadars != null) swRadars.setSelected(true);
+        if (swCameras != null) swCameras.setSelected(true);
+        if (swFails != null) swFails.setSelected(false);
 
         // botones overlay
         if (btnPolice != null)    btnPolice.setOnAction(e -> serviceClicked("POLICE"));

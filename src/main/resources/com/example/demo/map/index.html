@@ -32,7 +32,7 @@
     semDiv: L.divIcon({ className:'marker-semaforo', iconSize:[18,18] })
   };
 
-  // 4) Capas para filtrado por tipo y estado
+  // 4) Capas para filtrado. Se crean vacías y se añaden al mapa desde Java.
   const layerGroups = {
     semaphores: L.layerGroup(),
     radars:     L.layerGroup(),
@@ -65,9 +65,10 @@
 
   /** Muestra/oculta TODOS los marcadores de dispositivos */
   window.setAllDevicesVisible = function(visible) {
-    for (const key in layerGroups) {
-      window.setGroupVisible(key, visible);
-    }
+    // No afecta a la capa de fallas, que tiene su propio toggle
+    window.setGroupVisible('semaphores', visible);
+    window.setGroupVisible('radars', visible);
+    window.setGroupVisible('cameras', visible);
   };
 
   /**
