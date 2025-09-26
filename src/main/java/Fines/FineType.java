@@ -56,6 +56,7 @@ public class FineType {
         if (!(o instanceof FineType)) return false;
         FineType fineType = (FineType) o;
         return Objects.equals(code, fineType.code);
+        //hola
     }
     @Override public int hashCode() {
         return Objects.hash(code);
