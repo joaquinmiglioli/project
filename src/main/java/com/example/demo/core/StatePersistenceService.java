@@ -5,7 +5,6 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/** Guarda/carga CentralState en un binario simple (serialización Java). */
 public final class StatePersistenceService {
     private final Path file;
 
@@ -19,7 +18,8 @@ public final class StatePersistenceService {
         }
     }
 
-    public CentralState loadOrBootstrap(Path devicesJson) {
+    public CentralState loadOrBootstrap(Path ignoredDevicesJsonPath) {
+        // Si ya existe snapshot => cargar
         if (Files.exists(file)) {
             try (var in = new ObjectInputStream(Files.newInputStream(file))) {
                 return (CentralState) in.readObject();
@@ -27,8 +27,16 @@ public final class StatePersistenceService {
                 System.err.println("Fallo leyendo snapshot, rearmando desde JSON… " + e.getMessage());
             }
         }
+        // Si no, bootstrap desde /devices.json en el classpath
         CentralState st = new CentralState();
-        BootstrapLoader.loadFromJson(devicesJson, st);
+        try (var is = getClass().getResourceAsStream("/devices.json")) {
+            if (is == null) throw new IllegalStateException("devices.json no encontrado en classpath");
+            var tmp = Files.createTempFile("devices", ".json");
+            Files.copy(is, tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            BootstrapLoader.loadFromJson(tmp, st);
+        } catch (Exception e) {
+            throw new RuntimeException("Error cargando devices.json", e);
+        }
         return st;
     }
 }
