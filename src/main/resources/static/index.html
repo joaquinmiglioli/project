@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Mapa — Red de Monitoreo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        html,body,#map{height:100%;margin:0}
+        .leaflet-popup-content { font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // 1) Crear mapa
+    const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 14);
+
+    // Capa base: OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // 2) Helpers y capas
+    const layers = {}; // id -> marker/circle
+
+    function colorFor(status){
+      switch((status||'').toUpperCase()){
+        case 'GREEN': return '#22c55e';
+        case 'YELLOW':return '#facc15';
+        case 'RED':   return '#ef4444';
+        case 'ERROR': return '#7c3aed';
+        default:      return '#2b2b2b';
+      }
+    }
+
+    // 3) API que usa el resto del código
+    window.setView = (lat,lng,zoom)=> map.setView([lat,lng], zoom);
+
+    window.addDevices = (jsonStr)=>{
+      const data = JSON.parse(jsonStr);
+
+      // Semáforos -> círculos coloreados
+      (data.semaphoreControllers||[]).forEach(sc=>{
+        const m = L.circleMarker([sc.lat, sc.lng], {
+          radius: 7, fillOpacity: 0.95, color:'#000', weight:1, fillColor: colorFor(sc.status)
+        }).addTo(map).bindPopup(sc.id);
+        layers[sc.id]=m;
+      });
+
+      // Radares / cámaras como marcadores
+      const addPoint = (d)=> {
+        const m = L.marker([d.lat, d.lng]).addTo(map).bindPopup(d.id);
+        layers[d.id] = m;
+      };
+      (data.radars||[]).forEach(addPoint);
+      (data.securityCameras||[]).forEach(addPoint);
+      (data.parkingCameras||[]).forEach(pc=>{
+        const m = L.marker([pc.lat, pc.lng]).addTo(map)
+          .bindPopup(pc.id + " (tol " + (pc.toleranceTime||0) + "s)");
+        layers[pc.id]=m;
+      });
+
+      // Ajustar vista a todos
+      const all = Object.values(layers);
+      if(all.length){
+        const group = L.featureGroup(all);
+        map.fitBounds(group.getBounds().pad(0.15));
+      }
+    };
+
+    window.updateSemaphoreStatus = (id, status)=>{
+      const m = layers[id];
+      if(m && m.setStyle) m.setStyle({ fillColor: colorFor(status) });
+    };
+
+    // 4) Cargar datos desde archivo estático (colocar devices.json en /static)
+    fetch('/devices.json')
+      .then(r => {
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+      })
+      .then(data => window.addDevices(JSON.stringify(data)))
+      .catch(err => console.error('Error cargando devices.json:', err));
+</script>
+</body>
+</html>
