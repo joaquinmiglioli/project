@@ -77,6 +77,16 @@ public class MapView extends AnchorPane {
         runJs("if (window.setView) window.setView(" + lat + "," + lng + "," + zoom + ");");
     }
 
+    /** Muestra/oculta un grupo de marcadores (layerGroup) en el mapa */
+    public void setGroupVisible(String group, boolean visible) {
+        runJs("if (window.setGroupVisible) window.setGroupVisible('" + group + "', " + visible + ");");
+    }
+
+    /** Muestra/oculta TODOS los marcadores de dispositivos */
+    public void setAllDevicesVisible(boolean visible) {
+        runJs("if (window.setAllDevicesVisible) window.setAllDevicesVisible(" + visible + ");");
+    }
+
     /** Carga un archivo JSON desde el classpath y lo envía al mapa */
     public void addDevicesFromResource(String resourcePath) {
         try (var is = getClass().getResourceAsStream(resourcePath)) {
@@ -105,7 +115,7 @@ public class MapView extends AnchorPane {
      * Escapa texto para usar dentro de un template literal JS:
      *  - backslash -> \\
      *  - backtick  -> \`
-     *  - secuencia ${ -> \${   (evita interpolación)
+     *  - secuencia ${ -> \${
      */
     private static String toJsTemplateLiteral(String s) {
         return s

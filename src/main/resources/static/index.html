@@ -18,8 +18,8 @@
     // 1) Crear mapa
     const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 14);
 
-    // Capa base: OpenStreetMap
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+    // Capa base: OpenStreetMap (fusionada)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
@@ -37,7 +37,7 @@
       }
     }
 
-    // Íconos
+    // Íconos (tus cambios)
     const cameraIcon = L.icon({ iconUrl: '/images/CameraPhoto.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
     const cameraIconError = L.icon({ iconUrl: '/images/CameraPhotoError.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
     const radarIcon = L.icon({ iconUrl: '/images/RadarPhoto.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
