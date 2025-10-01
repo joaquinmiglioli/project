@@ -19,7 +19,7 @@
     const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 14);
 
     // Capa base: OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
@@ -37,29 +37,46 @@
       }
     }
 
+    // Íconos
+    const cameraIcon = L.icon({ iconUrl: '/images/CameraPhoto.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+    const cameraIconError = L.icon({ iconUrl: '/images/CameraPhotoError.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+    const radarIcon = L.icon({ iconUrl: '/images/RadarPhoto.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+    const radarIconError = L.icon({ iconUrl: '/images/RadarPhotoError.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+    const parkingCameraIcon = L.icon({ iconUrl: '/images/ParkingCameraPhoto.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+    const parkingCameraIconError = L.icon({ iconUrl: '/images/ParkingCameraPhotoError.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+
     // 3) API que usa el resto del código
     window.setView = (lat,lng,zoom)=> map.setView([lat,lng], zoom);
 
-    window.addDevices = (jsonStr)=>{
+    window.addDevices = (jsonStr)=> {
       const data = JSON.parse(jsonStr);
 
       // Semáforos -> círculos coloreados
-      (data.semaphoreControllers||[]).forEach(sc=>{
+      (data.semaphoreControllers||[]).forEach(sc=> {
         const m = L.circleMarker([sc.lat, sc.lng], {
           radius: 7, fillOpacity: 0.95, color:'#000', weight:1, fillColor: colorFor(sc.status)
         }).addTo(map).bindPopup(sc.id);
         layers[sc.id]=m;
       });
 
-      // Radares / cámaras como marcadores
-      const addPoint = (d)=> {
-        const m = L.marker([d.lat, d.lng]).addTo(map).bindPopup(d.id);
+      // Radares (con ícono de error)
+      (data.radars||[]).forEach(d=> {
+        const icon = d.status === 'ERROR' ? radarIconError : radarIcon;
+        const m = L.marker([d.lat, d.lng], {icon: icon}).addTo(map).bindPopup(d.id);
         layers[d.id] = m;
-      };
-      (data.radars||[]).forEach(addPoint);
-      (data.securityCameras||[]).forEach(addPoint);
-      (data.parkingCameras||[]).forEach(pc=>{
-        const m = L.marker([pc.lat, pc.lng]).addTo(map)
+      });
+
+      // Cámaras de seguridad (con ícono de error)
+      (data.securityCameras||[]).forEach(d=> {
+        const icon = d.status === 'ERROR' ? cameraIconError : cameraIcon;
+        const m = L.marker([d.lat, d.lng], {icon: icon}).addTo(map).bindPopup(d.id);
+        layers[d.id] = m;
+      });
+      
+      // Cámaras de estacionamiento (con ícono de error)
+      (data.parkingCameras||[]).forEach(pc=> {
+        const icon = pc.status === 'ERROR' ? parkingCameraIconError : parkingCameraIcon;
+        const m = L.marker([pc.lat, pc.lng], {icon: icon}).addTo(map)
           .bindPopup(pc.id + " (tol " + (pc.toleranceTime||0) + "s)");
         layers[pc.id]=m;
       });
@@ -72,9 +89,25 @@
       }
     };
 
-    window.updateSemaphoreStatus = (id, status)=>{
+    window.updateSemaphoreStatus = (id, status)=> {
       const m = layers[id];
       if(m && m.setStyle) m.setStyle({ fillColor: colorFor(status) });
+    };
+
+    window.updateDeviceStatus = (id, status) => {
+        const m = layers[id];
+        if (!m) return;
+
+        let icon;
+        if (id.startsWith('Radar')) {
+            icon = status === 'ERROR' ? radarIconError : radarIcon;
+        } else if (id.startsWith('Parking Camera')) {
+            icon = status === 'ERROR' ? parkingCameraIconError : parkingCameraIcon;
+        } else if (id.startsWith('Camera')) {
+            icon = status === 'ERROR' ? cameraIconError : cameraIcon;
+        }
+
+        if (icon) m.setIcon(icon);
     };
 
     // 4) Cargar datos desde archivo estático (colocar devices.json en /static)
