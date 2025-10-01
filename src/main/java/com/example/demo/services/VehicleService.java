@@ -33,9 +33,9 @@ public class VehicleService {
     public String colorFor(String plate)     { ensure(plate); return byPlate.get(plate).color; }
 
     private final String[] finePhotos = {
-            "/com/example/demo/Images/Fines/FinesPhoto1.jpeg",
-            "/com/example/demo/Images/Fines/FinesPhoto2.jpg",
-            "/com/example/demo/Images/Fines/FinesPhoto3.jpg"
+            "/static/images/Fines/FinesPhoto1.jpeg",
+            "/static/images/Fines/FinesPhoto2.jpg",
+            "/static/images/Fines/FinesPhoto3.jpg"
     };
     /** Busca una foto en /com/example/demo/Images/Cars; si no hay, devuelve null. */
     public String randomCarPhotoPathOrNull() {

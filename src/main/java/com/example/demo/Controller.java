@@ -64,18 +64,18 @@ public class Controller {
     private String currentDeviceId = null;
     private final Random random = new Random();
     private final String[] images = {
-            "/com/example/demo/Images/SecurityPhotoAnomaly1.jpg",
-            "/com/example/demo/Images/SecurityPhotoAnomaly2.jpg",
-            "/com/example/demo/Images/SecurityPhotoAnomaly3.jpg",
-            "/com/example/demo/Images/SecurityPhotoAnomaly4.jpg",
-            "/com/example/demo/Images/SecurityPhotoAnomaly5.jpg",
-            "/com/example/demo/Images/SecurityPhotoAnomaly6.jpg",
-            "/com/example/demo/Images/SecurityPhotoNormal1.jpg",
-            "/com/example/demo/Images/SecurityPhotoNormal2.jpeg",
-            "/com/example/demo/Images/SecurityPhotoNormal3.jpg",
-            "/com/example/demo/Images/SecurityPhotoNormal4.jpg",
-            "/com/example/demo/Images/SecurityPhotoNormal5.jpg",
-            "/com/example/demo/Images/SecurityPhotoNormal6.jpg"
+            "/static/images/SecurityPhotoAnomaly1.jpg",
+            "/static/images/SecurityPhotoAnomaly2.jpg",
+            "/static/images/SecurityPhotoAnomaly3.jpg",
+            "/static/images/SecurityPhotoAnomaly4.jpg",
+            "/static/images/SecurityPhotoAnomaly5.jpg",
+            "/static/images/SecurityPhotoAnomaly6.jpg",
+            "/static/images/SecurityPhotoNormal1.jpg",
+            "/static/images/SecurityPhotoNormal2.jpeg",
+            "/static/images/SecurityPhotoNormal3.jpg",
+            "/static/images/SecurityPhotoNormal4.jpg",
+            "/static/images/SecurityPhotoNormal5.jpg",
+            "/static/images/SecurityPhotoNormal6.jpg"
     };
 
     // ===== POJOs para tablas =====
