@@ -14,7 +14,7 @@ public class ApiController {
 
     @GetMapping("/api/devices")
     public JsonNode devices() {
-        try (InputStream is = new ClassPathResource("devices.json").getInputStream()) {
+        try (InputStream is = new ClassPathResource("static/devices.json").getInputStream()) {
             return MAPPER.readTree(is);
         } catch (Exception e) {
             throw new RuntimeException("No pude leer devices.json del classpath", e);

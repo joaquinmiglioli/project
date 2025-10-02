@@ -47,7 +47,7 @@ public final class StatePersistenceService {
         }
 
         // 2.b) fallback: intentar cargar devices.json desde classpath (resources)
-        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("devices.json")) {
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("static/devices.json")) {
             if (is != null) {
                 BootstrapLoader.loadFromJson(is, st);
                 return st;

@@ -14,7 +14,7 @@ public class DevicesController {
 
     @GetMapping(value = "/api/devices", produces = MediaType.APPLICATION_JSON_VALUE)
     public String devices() throws Exception {
-        try (InputStream is = new ClassPathResource("devices.json").getInputStream()) {
+        try (InputStream is = new ClassPathResource("static/devices.json").getInputStream()) {
             return StreamUtils.copyToString(is, StandardCharsets.UTF_8);
         }
     }
