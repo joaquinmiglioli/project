@@ -112,7 +112,7 @@ public class Controller {
                 showRandomCameraImageFor(id);
             });
             // CARGA DESDE CLASSPATH (resources)
-            try (var is = getClass().getResourceAsStream("/static/devices.json")) {
+            try (var is = getClass().getResourceAsStream("/devices.json")) {
                 if (is == null) {
                     System.err.println("devices.json NO encontrado en resources/com/example/demo/");
                     return;
