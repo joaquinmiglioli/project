@@ -5,13 +5,15 @@ import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+@Service
 public final class PdfGenerator {
 
     private static final DateTimeFormatter TS_FMT =
@@ -30,8 +32,8 @@ public final class PdfGenerator {
             String brand,
             String model,
             String color,
-            String barcode,      // 6+12 dígitos
-            String photoPathOrNull   // ahora puede ser ruta de classpath (empieza con "/")
+            String barcode,
+            String photoFileName   // 👈 SOLO el nombre del archivo, ej: "CameraPhoto.png"
     ) {
         Path out = outDir.resolve("fine-" + fineNumber + ".pdf");
 
@@ -43,7 +45,7 @@ public final class PdfGenerator {
                 float margin = 50;
                 float y = page.getMediaBox().getHeight() - margin;
 
-                // Header
+                // ===== Header =====
                 cs.beginText();
                 cs.setFont(PDType1Font.HELVETICA_BOLD, 16);
                 cs.newLineAtOffset(margin, y);
@@ -54,10 +56,10 @@ public final class PdfGenerator {
                 cs.beginText();
                 cs.setFont(PDType1Font.HELVETICA, 12);
                 cs.newLineAtOffset(margin, y);
-                cs.showText("Fine number:" + fineNumber + "   Issue date: " + TS_FMT.format(java.time.Instant.now()));
+                cs.showText("Fine number: " + fineNumber + "   Issue date: " + TS_FMT.format(java.time.Instant.now()));
                 cs.endText();
 
-                // Datos del auto / titular
+                // ===== Vehicle info =====
                 y -= 28;
                 cs.beginText();
                 cs.setFont(PDType1Font.HELVETICA_BOLD, 13);
@@ -67,15 +69,15 @@ public final class PdfGenerator {
 
                 y -= 16;
                 writeLine(cs, margin, y, "Owner: " + owner);  y -= 14;
-                writeLine(cs, margin, y, "Patent:" + v.plate); y -= 14;
+                writeLine(cs, margin, y, "Patent: " + v.plate); y -= 14;
                 writeLine(cs, margin, y, "Brand/Model/Color: " + brand + " / " + model + " / " + color);
 
-                // Infracción
+                // ===== Infraction =====
                 y -= 24;
                 cs.beginText();
                 cs.setFont(PDType1Font.HELVETICA_BOLD, 13);
                 cs.newLineAtOffset(margin, y);
-                cs.showText("Infractión");
+                cs.showText("Infraction");
                 cs.endText();
 
                 y -= 16;
@@ -84,23 +86,23 @@ public final class PdfGenerator {
                 writeLine(cs, margin, y, "Address: " + address); y -= 14;
                 writeLine(cs, margin, y, "Details: " + v.details);
 
-                // Foto (opcional) — ahora carga desde classpath o desde archivo, según lo que venga
-                PDImageXObject img = loadImageFromResourceOrFile(doc, photoPathOrNull);
+                // ===== Imagen =====
+                PDImageXObject img = loadImageFromStatic(doc, photoFileName);
                 if (img != null) {
-                    float imgW = 260;
+                    float imgW = 300;
                     float ratio = img.getHeight() / (float) img.getWidth();
                     float imgH = imgW * ratio;
-                    y -= (imgH + 12);
+                    y -= (imgH + 20);
                     cs.drawImage(img, margin, y, imgW, imgH);
                 } else {
-                    y -= 16;
+                    System.out.println("⚠️ No se pudo cargar la imagen para el PDF.");
                 }
 
-                // Importe y puntos
-                y -= 12;
-                writeLineBold(cs, margin, y, String.format("Amount: $ %.2f Points to be deducted: %d", calc.amount(), calc.points()));
+                // ===== Amount =====
+                y -= 20;
+                writeLineBold(cs, margin, y, String.format("Amount: $ %.2f   Points: %d", calc.amount(), calc.points()));
 
-                // “Código de barras” (impresión del número 6+12)
+                // ===== Barcode =====
                 y -= 28;
                 cs.beginText();
                 cs.setFont(PDType1Font.COURIER_BOLD, 18);
@@ -108,12 +110,14 @@ public final class PdfGenerator {
                 cs.showText(barcode);
                 cs.endText();
 
-                // Pie
+                // ===== Footer =====
                 y -= 24;
                 writeLine(cs, margin, y, "Please submit this document within 10 business days.");
             }
 
             doc.save(out.toFile());
+            System.out.println("✅ PDF generado en: " + out.toAbsolutePath());
+
         } catch (Exception e) {
             throw new RuntimeException("Error generating PDF: " + e.getMessage(), e);
         }
@@ -121,25 +125,22 @@ public final class PdfGenerator {
         return out;
     }
 
-    /** Intenta primero cargar como recurso de classpath (cuando la ruta empieza con "/"). Si no, intenta como archivo. */
-    private static PDImageXObject loadImageFromResourceOrFile(PDDocument doc, String path) {
-        if (path == null || path.isBlank()) return null;
-
-        // 1) Classpath (resources)
-        if (path.startsWith("/")) {
-            try (InputStream is = PdfGenerator.class.getResourceAsStream(path)) {
-                if (is != null) {
-                    byte[] bytes = is.readAllBytes();
-                    return PDImageXObject.createFromByteArray(doc, bytes, "fine-photo");
-                }
-            } catch (IOException ignore) { /* si falla, probamos archivo */ }
-        }
-
-        // 2) Ruta de archivo (absoluta o relativa)
+    /**
+     * Carga la imagen desde la carpeta "static/images".
+     * Ejemplo de uso: loadImageFromStatic(doc, "CameraPhoto.png");
+     */
+    private static PDImageXObject loadImageFromStatic(PDDocument doc, String fileName) {
         try {
-            return PDImageXObject.createFromFile(path, doc);
+            File f = new File("src/main/resources/static/images/" + fileName);
+            if (!f.exists()) {
+                System.out.println("⚠️ Imagen no encontrada: " + f.getAbsolutePath());
+                return null;
+            }
+            System.out.println("📁 Cargando imagen desde: " + f.getAbsolutePath());
+            return PDImageXObject.createFromFileByContent(f, doc);
         } catch (IOException e) {
-            return null; // no frenamos el PDF por una foto
+            System.out.println("❌ Error al cargar imagen: " + e.getMessage());
+            return null;
         }
     }
 

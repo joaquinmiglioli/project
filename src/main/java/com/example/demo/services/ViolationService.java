@@ -2,6 +2,7 @@ package com.example.demo.services;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+@Service
 
 public class ViolationService {
 

@@ -2,6 +2,7 @@ package com.example.demo.services;
 
 import com.example.demo.core.CentralState;
 import Devices.TrafficLightStatus;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.*;
  * Servicio que controla el ciclo de los semáforos A y B
  * exactamente como en la tabla solicitada.
  */
+@Service
 public class TrafficLightCycleService {
 
     private final CentralState state;
