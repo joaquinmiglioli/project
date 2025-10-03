@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>City Monitor</title>
 
-    <!-- Leaflet CSS (sin integrity para evitar bloqueos) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
     <style>
         html,body,#map{height:100%;margin:0}
         .leaflet-popup-content{font:13px/1.2 sans-serif}
 
-        /* Caja flotante (panel) */
         .devices-control{
           position:absolute;
           top:20px; right:20px;
@@ -41,7 +38,6 @@
           font-size:14px;
         }
 
-        /* Switch iOS */
         .switch {
           position: relative;
           display: inline-block;
@@ -70,61 +66,41 @@
 <body>
 <div id="map" aria-label="City map"></div>
 
-<!-- Panel switches -->
 <div class="devices-control">
     <div id="devicesPanel" class="devices-panel" role="group" aria-label="Show devices">
         <div class="devices-title">Show Devices</div>
 
         <div class="devices-option">
             <label for="chkRadars">Radars</label>
-            <label class="switch" aria-label="Toggle Radars">
-                <input type="checkbox" id="chkRadars" checked>
-                <span class="switch-slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="chkRadars" checked><span class="switch-slider"></span></label>
         </div>
-
         <div class="devices-option">
             <label for="chkParking">Parking Cameras</label>
-            <label class="switch" aria-label="Toggle Parking Cameras">
-                <input type="checkbox" id="chkParking" checked>
-                <span class="switch-slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="chkParking" checked><span class="switch-slider"></span></label>
         </div>
-
         <div class="devices-option">
             <label for="chkSecurity">Cameras</label>
-            <label class="switch" aria-label="Toggle Cameras">
-                <input type="checkbox" id="chkSecurity" checked>
-                <span class="switch-slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="chkSecurity" checked><span class="switch-slider"></span></label>
         </div>
-
         <div class="devices-option">
             <label for="chkSemaphores">Semaphores</label>
-            <label class="switch" aria-label="Toggle Semaphores">
-                <input type="checkbox" id="chkSemaphores" checked>
-                <span class="switch-slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="chkSemaphores" checked><span class="switch-slider"></span></label>
         </div>
     </div>
 </div>
 
-<!-- Leaflet JS (sin integrity) -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function(){
 
-      // --- Mapa
       const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 15);
 
-      // Base en grises (CARTO)
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap, © CARTO'
       }).addTo(map);
 
-      // --- Grupos por categoría
       const groups = {
         radars: L.layerGroup().addTo(map),
         parking: L.layerGroup().addTo(map),
@@ -132,10 +108,8 @@
         semaphores: L.layerGroup().addTo(map)
       };
 
-      // --- Diccionario (id -> marker/circle)
       const deviceLayers = new Map();
 
-      // --- Icon factory
       function mkIcon(url){
         return L.icon({
           iconUrl: url,
@@ -145,7 +119,6 @@
         });
       }
 
-      // Íconos (OK / ERROR) — deben existir en /static/images
       const ICONS = {
         radar:   { ok: mkIcon('/images/RadarPhoto.png'),         err: mkIcon('/images/RadarPhotoError.png') },
         parking: { ok: mkIcon('/images/ParkingCameraPhoto.png'), err: mkIcon('/images/ParkingCameraPhotoError.png') },
@@ -163,7 +136,6 @@
         }
       }
 
-      // --- Switches / visibilidad
       const chkRadars     = document.getElementById('chkRadars');
       const chkParking    = document.getElementById('chkParking');
       const chkSecurity   = document.getElementById('chkSecurity');
@@ -180,9 +152,7 @@
       chkSecurity.onchange = applyVisibility;
       chkSemaphores.onchange = applyVisibility;
 
-      // --- Render principal
       function addDevices(data){
-        // limpiar grupos y diccionario
         groups.radars.clearLayers();
         groups.parking.clearLayers();
         groups.security.clearLayers();
@@ -191,37 +161,30 @@
 
         const ftrs = [];
 
-        // Radars
         (data.radars||[]).forEach(r => {
           const ic = isErrorStatus(r.status) ? ICONS.radar.err : ICONS.radar.ok;
-          const m = L.marker([r.lat, r.lng], { icon: ic })
-            .bindPopup(`<b>${r.id}</b><br>Status: ${r.status||'?'}`);
+          const m = L.marker([r.lat, r.lng], { icon: ic }).bindPopup(`<b>${r.id}</b><br>Status: ${r.status||'?'}`);
           m.addTo(groups.radars);
           deviceLayers.set(r.id, m);
           ftrs.push(m);
         });
 
-        // Parking Cameras
         (data.parkingCameras||[]).forEach(p => {
           const ic = isErrorStatus(p.status) ? ICONS.parking.err : ICONS.parking.ok;
-          const m = L.marker([p.lat, p.lng], { icon: ic })
-            .bindPopup(`<b>${p.id}</b><br>Tolerance: ${p.toleranceTime||0}s<br>Status: ${p.status||'?'}`);
+          const m = L.marker([p.lat, p.lng], { icon: ic }).bindPopup(`<b>${p.id}</b><br>Tolerance: ${p.toleranceTime||0}s<br>Status: ${p.status||'?'}`);
           m.addTo(groups.parking);
           deviceLayers.set(p.id, m);
           ftrs.push(m);
         });
 
-        // Security Cameras
         (data.securityCameras||[]).forEach(c => {
           const ic = isErrorStatus(c.status) ? ICONS.camera.err : ICONS.camera.ok;
-          const m = L.marker([c.lat, c.lng], { icon: ic })
-            .bindPopup(`<b>${c.id}</b><br>Status: ${c.status||'?'}`);
+          const m = L.marker([c.lat, c.lng], { icon: ic }).bindPopup(`<b>${c.id}</b><br>Status: ${c.status||'?'}`);
           m.addTo(groups.security);
           deviceLayers.set(c.id, m);
           ftrs.push(m);
         });
 
-        // Semaphores (CircleMarker con color por estado)
         (data.semaphoreControllers||[]).forEach(s => {
           const cm = L.circleMarker([s.lat, s.lng], {
             radius: 7,
@@ -229,23 +192,20 @@
             color:'#000',
             weight:1,
             fillColor: colorFor(s.status)
-          }).bindPopup(`<b>${s.id}</b><br>Status: ${s.status||'?'}`);
+          }).bindPopup(`<b>${s.id}</b><br>Status A: ${s.status||'?'}<br>Status B: ?`);
           cm.addTo(groups.semaphores);
           deviceLayers.set(s.id, cm);
           ftrs.push(cm);
         });
 
-        // Ajustar vista
         if (ftrs.length){
           const g = L.featureGroup(ftrs);
           map.fitBounds(g.getBounds().pad(0.15));
         }
 
-        // respetar switches
         applyVisibility();
       }
 
-      // --- Carga inicial desde el backend
       async function loadDevices(){
         try{
           const res = await fetch('/api/devices', { cache: 'no-store' });
@@ -253,47 +213,39 @@
           const data = await res.json();
           addDevices(data);
         }catch(err){
-          console.warn('No se pudo cargar /api/devices. Se mostrará solo el mapa base.', err);
+          console.warn('No se pudo cargar /api/devices.', err);
         }
       }
 
-      // Llamada inicial
       loadDevices();
 
-      // --- APIs para runtime updates (backend -> front)
-      window.refreshDevices = () => loadDevices();
-
-      window.updateDeviceStatus = (id, status) => {
-        const m = deviceLayers.get(id);
-        if(!m) return;
-        const lid = String(id).toLowerCase();
-        let type = null;
-        if (lid.includes('radar')) type = 'radar';
-        else if (lid.includes('parking')) type = 'parking';
-        else if (lid.includes('camera')) type = 'camera';
-
-        if (type && m.setIcon){
-          const ic = isErrorStatus(status) ? ICONS[type].err : ICONS[type].ok;
-          m.setIcon(ic);
-          if (m.getPopup()){
-            m.setPopupContent(`<b>${id}</b><br>Status: ${status||'?'}`);
-          }
-        }
-      };
-
-      window.updateSemaphoreStatus = (id, status) => {
+      window.updateSemaphoreStatus = (id, statusA, statusB) => {
         const m = deviceLayers.get(id);
         if(m && m.setStyle){
-          m.setStyle({ fillColor: colorFor(status) });
+          m.setStyle({ fillColor: colorFor(statusA) });
           if (m.getPopup()){
-            m.setPopupContent(`<b>${id}</b><br>Status: ${status||'?'}`);
+            m.setPopupContent(`<b>${id}</b><br>Status A: ${statusA||'?'}<br>Status B: ${statusB||'?'}`);
           }
         }
       };
 
-      window.setView = (lat,lng,zoom)=> map.setView([lat,lng], zoom);
+      // 🔁 Consultar estados de semáforos cada 3s
+      async function updateTrafficLights(){
+        try {
+          const res = await fetch('/api/trafficlights');
+          if(!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
 
-    }); // DOMContentLoaded
+          data.forEach(tl => {
+            window.updateSemaphoreStatus(tl.id, tl.a, tl.b);
+          });
+        } catch (e) {
+          console.error('❌ Error actualizando semáforos:', e);
+        }
+      }
+
+      setInterval(updateTrafficLights, 3000);
+    });
 </script>
 </body>
 </html>
