@@ -2,10 +2,12 @@ package com.example.demo.services;
 
 import Fines.FineType;
 import Fines.Speeding;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
 public class FineTypeService {
     private final Map<String, FineType> byCode = new HashMap<>();
 

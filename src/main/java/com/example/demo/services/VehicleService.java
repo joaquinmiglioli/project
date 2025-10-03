@@ -1,8 +1,11 @@
 package com.example.demo.services;
 
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+@Service
 
 public class VehicleService {
     private final Map<String, Vehicle> byPlate = new HashMap<>();
@@ -33,9 +36,9 @@ public class VehicleService {
     public String colorFor(String plate)     { ensure(plate); return byPlate.get(plate).color; }
 
     private final String[] finePhotos = {
-            "/static/images/Fines/FinesPhoto1.jpeg",
-            "/static/images/Fines/FinesPhoto2.jpg",
-            "/static/images/Fines/FinesPhoto3.jpg"
+            "/static/images/FinesPhoto1.jpeg",
+            "/static/images/FinesPhoto2.jpg",
+            "/static/images/FinesPhoto3.jpg"
     };
     /** Busca una foto en /com/example/demo/Images/Cars; si no hay, devuelve null. */
     public String randomCarPhotoPathOrNull() {

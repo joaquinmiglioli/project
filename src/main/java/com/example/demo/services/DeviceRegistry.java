@@ -1,11 +1,14 @@
 // com/example/demo/services/DeviceRegistry.java
 package com.example.demo.services;
 
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /** Registro sencillo de direcciones por dispositivo (RAD-1, PK-3, INT-5, CAM-2, etc.). */
+@Service
 public class DeviceRegistry {
     private final Map<String, String> addressById = new HashMap<>();
 

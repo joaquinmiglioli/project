@@ -14,7 +14,7 @@ public final class AppContext {
     public final DeviceRegistry   deviceRegistry;
     public final FineEmissionService fineEmissionService;
 
-    // 👇 NUEVO: servicio de ciclo de semáforos
+    // servicio de ciclo de semáforos
     public final TrafficLightCycleService trafficLightCycleService;
 
     public AppContext() {

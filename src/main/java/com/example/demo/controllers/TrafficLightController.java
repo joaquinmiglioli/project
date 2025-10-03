@@ -12,10 +12,14 @@ public class TrafficLightController {
 
     private final AppContext ctx;
 
-    public TrafficLightController(AppContext ctx) {  // ← inyecta el MISMO bean
+    public TrafficLightController(AppContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * ✅ Devuelve el estado actual de todos los semáforos.
+     * Este endpoint es utilizado por el frontend para actualizar el mapa.
+     */
     @GetMapping("/api/trafficlights")
     public List<Map<String, String>> getTrafficLights() {
         List<Map<String, String>> out = new ArrayList<>();

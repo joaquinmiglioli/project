@@ -2,6 +2,7 @@ package com.example.demo.core;
 
 import Devices.DeviceStatus;
 import Devices.TrafficLightStatus;
+import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.*;
@@ -10,10 +11,10 @@ import java.util.*;
  * Estado serializable completo de la central.
  * Se persiste en disco al salir y se restaura al iniciar.
  */
+@Component  // ⬅️ ESTA LÍNEA convierte CentralState en un bean que Spring puede inyectar
 public class CentralState implements Serializable {
 
     // ===== Dispositivos (por ID: "RAD-1", "PK-3", "INT-5", "CAM-2") =====
-    // Guardamos solo los datos necesarios para reconstituir la UI/simulaciones.
     public Map<String, DeviceSnapshot> devicesById = new LinkedHashMap<>();
 
     // Configuraciones de simulación
@@ -22,15 +23,13 @@ public class CentralState implements Serializable {
 
     // Semáforos
     public Map<String, TLMode> tlMode = new HashMap<>();
-    public Map<String, TLState> tlStates = new HashMap<>(); // estado A/B y quién es principal
+    public Map<String, TLState> tlStates = new HashMap<>();
 
-    // Historial de violaciones (log)
+    // Historial de violaciones
     public List<ViolationSnapshot> violations = new ArrayList<>();
 
-    // ===== Tipos auxiliares =====
     public enum TLMode { NORMAL, FLASHING }
 
-    /** Estado por intersección (A y B). */
     public static class TLState implements Serializable {
         public TrafficLightStatus a;
         public TrafficLightStatus b;
@@ -42,17 +41,15 @@ public class CentralState implements Serializable {
         }
     }
 
-    /** Snapshot mínimo de un dispositivo (tipo + dirección + estado). */
     public static class DeviceSnapshot implements Serializable {
-        public String deviceId;     // "RAD-1"
-        public String type;         // "Radar" | "ParkingCamera" | "TrafficLight" | "SecurityCamera"
+        public String deviceId;
+        public String type;
         public String address;
         public DeviceStatus status = DeviceStatus.NORMAL;
 
-        // específicos (opcionales)
-        public Integer speedLimit;       // Radar
-        public Integer toleranceSec;     // Parking
-        public Boolean principalIsA;     // TrafficLightController (config)
+        public Integer speedLimit;
+        public Integer toleranceSec;
+        public Boolean principalIsA;
 
         public DeviceSnapshot() {}
         public static DeviceSnapshot radar(String id, String addr, int limit) {
@@ -77,12 +74,11 @@ public class CentralState implements Serializable {
         }
     }
 
-    /** Violación persistible (equivalente a tu Violation). */
     public static class ViolationSnapshot implements Serializable {
         public long epochSeconds;
         public String deviceId;
         public String plate;
-        public String type;     // SPEEDING, ILLEGAL_PARKING, RED_LIGHT, SERVICE_CALL
+        public String type;
         public String details;
     }
 }

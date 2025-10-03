@@ -1,18 +1,15 @@
 package com.example.demo.services;
 
 import Fines.FineType;
+import com.example.demo.controllers.FineNotificationController;
 import javafx.collections.ListChangeListener;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.nio.file.*;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +57,9 @@ public class FineEmissionService {
         });
     }
 
+    /**
+     * ✅ Se ejecuta automáticamente cuando ocurre una violación.
+     */
     private void onViolation(ViolationService.Violation v) {
         if (v.type == ViolationService.Type.SERVICE_CALL) return;
 
@@ -78,18 +78,54 @@ public class FineEmissionService {
         String brand   = vehicleService.brandFor(v.plate);
         String model   = vehicleService.modelFor(v.plate);
         String color   = vehicleService.colorFor(v.plate);
-
         String barcode = composeBarcode(fineNumber, calc.amount());
-        String photo   = vehicleService.randomCarPhotoPathOrNull();
 
+        // ✅ Foto aleatoria entre las de anomalías
+        String photo = chooseRandomAnomalyPhoto();
+
+        // ✅ Generar PDF
         Path pdf = PdfGenerator.generateFinePDF(
                 outDir, fineNumber, v, type, calc, address, owner, brand, model, color, barcode, photo
         );
-        System.out.println("Fine emitted: " + pdf.toAbsolutePath());
+        System.out.println("✅ Fine emitted: " + pdf.toAbsolutePath());
+
+        // ✅ Notificar al nuevo controlador de multas
+        FineNotificationController.updateLastFine(
+                fineNumber,
+                v.plate,
+                type.getDescription(),
+                pdf.toAbsolutePath().toString()
+        );
     }
 
+    /**
+     * 📸 Selecciona aleatoriamente una imagen de infracción desde /static/images/
+     */
+    private String chooseRandomAnomalyPhoto() {
+        Path imagesDir = Paths.get("src/main/resources/static/images");
+        try {
+            List<Path> anomalyPhotos = Files.list(imagesDir)
+                    .filter(p -> p.getFileName().toString().startsWith("SecurityPhotoAnomaly"))
+                    .filter(p -> p.toString().endsWith(".jpg") || p.toString().endsWith(".png"))
+                    .collect(Collectors.toList());
+
+            if (!anomalyPhotos.isEmpty()) {
+                Path randomPhoto = anomalyPhotos.get(random.nextInt(anomalyPhotos.size()));
+                System.out.println("📸 Foto seleccionada: " + randomPhoto.toString());
+                return randomPhoto.toString();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // fallback si no hay ninguna
+        return "src/main/resources/static/images/CameraPhoto.png";
+    }
+
+    /**
+     * 🧪 Simulación automática de multas
+     */
     public void startSimulation() {
-        if (simulationExecutor != null) return; // Ya está corriendo
+        if (simulationExecutor != null) return;
 
         this.radarIds = deviceRegistry.getAllDeviceIds().stream().filter(id -> id.startsWith("RAD-")).collect(Collectors.toList());
         this.parkingCamIds = deviceRegistry.getAllDeviceIds().stream().filter(id -> id.startsWith("PK-")).collect(Collectors.toList());
@@ -108,7 +144,7 @@ public class FineEmissionService {
                 try {
                     int fineType = random.nextInt(3);
                     switch (fineType) {
-                        case 0: // SPEEDING
+                        case 0 -> {
                             if (!radarIds.isEmpty()) {
                                 String radarId = radarIds.get(random.nextInt(radarIds.size()));
                                 String plate = vehicleService.randomPlateOrGenerate();
@@ -117,8 +153,8 @@ public class FineEmissionService {
                                 violations.recordSpeeding(radarId, plate, speed, limit);
                                 System.out.println("SIM: Generated SPEEDING fine for plate " + plate);
                             }
-                            break;
-                        case 1: // ILLEGAL_PARKING
+                        }
+                        case 1 -> {
                             if (!parkingCamIds.isEmpty()) {
                                 String camId = parkingCamIds.get(random.nextInt(parkingCamIds.size()));
                                 String plate = vehicleService.randomPlateOrGenerate();
@@ -127,8 +163,8 @@ public class FineEmissionService {
                                 violations.recordIllegalParking(camId, plate, stayTime, tolerance);
                                 System.out.println("SIM: Generated ILLEGAL_PARKING fine for plate " + plate);
                             }
-                            break;
-                        case 2: // RED_LIGHT
+                        }
+                        case 2 -> {
                             if (!trafficLightIds.isEmpty()) {
                                 String intersectionId = trafficLightIds.get(random.nextInt(trafficLightIds.size()));
                                 String plate = vehicleService.randomPlateOrGenerate();
@@ -137,7 +173,7 @@ public class FineEmissionService {
                                 violations.recordRedLight(intersectionId, plate, direction);
                                 System.out.println("SIM: Generated RED_LIGHT fine for plate " + plate);
                             }
-                            break;
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
