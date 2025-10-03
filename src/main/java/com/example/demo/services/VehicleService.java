@@ -47,7 +47,7 @@ public class VehicleService {
 
     }
 
-    private String rndOwner() { String[] s = {"John Doe","Jane Smith","Luis Martínez","Ana Silva"}; return s[rnd.nextInt(s.length)]; }
+    private String rndOwner() { String[] s = {"Facundo Fontanals","Diego Henriquez","Matias Messina","Joaquin Miglioli"}; return s[rnd.nextInt(s.length)]; }
     private String rndBrand() { String[] s = {"Toyota","Ford","Chevrolet","Volkswagen","Renault"};  return s[rnd.nextInt(s.length)]; }
     private String rndModel() { String[] s = {"Corolla","Fiesta","Cruze","Golf","Clio"};            return s[rnd.nextInt(s.length)]; }
     private String rndColor() { String[] s = {"White","Black","Red","Blue","Silver"};               return s[rnd.nextInt(s.length)]; }
