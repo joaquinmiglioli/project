@@ -11,8 +11,8 @@ import java.util.*;
  * Estado serializable completo de la central.
  * Se persiste en disco al salir y se restaura al iniciar.
  */
-@Component  // ⬅️ ESTA LÍNEA convierte CentralState en un bean que Spring puede inyectar
-public class CentralState implements Serializable {
+    @Component  // ⬅️ ESTA LÍNEA convierte CentralState en un bean que Spring puede inyectar
+        public class CentralState implements Serializable {
 
     // ===== Dispositivos (por ID: "RAD-1", "PK-3", "INT-5", "CAM-2") =====
     public Map<String, DeviceSnapshot> devicesById = new LinkedHashMap<>();
@@ -28,16 +28,20 @@ public class CentralState implements Serializable {
     // Historial de violaciones
     public List<ViolationSnapshot> violations = new ArrayList<>();
 
-    public enum TLMode { NORMAL, FLASHING }
+    public enum TLMode {NORMAL, FLASHING}
 
     public static class TLState implements Serializable {
         public TrafficLightStatus a;
         public TrafficLightStatus b;
         public boolean principalIsA;
 
-        public TLState() {}
+        public TLState() {
+        }
+
         public TLState(TrafficLightStatus a, TrafficLightStatus b, boolean principalIsA) {
-            this.a = a; this.b = b; this.principalIsA = principalIsA;
+            this.a = a;
+            this.b = b;
+            this.principalIsA = principalIsA;
         }
     }
 
@@ -51,25 +55,41 @@ public class CentralState implements Serializable {
         public Integer toleranceSec;
         public Boolean principalIsA;
 
-        public DeviceSnapshot() {}
+        public DeviceSnapshot() {
+        }
+
         public static DeviceSnapshot radar(String id, String addr, int limit) {
             var d = new DeviceSnapshot();
-            d.deviceId = id; d.type = "Radar"; d.address = addr; d.speedLimit = limit;
+            d.deviceId = id;
+            d.type = "Radar";
+            d.address = addr;
+            d.speedLimit = limit;
             return d;
         }
+
         public static DeviceSnapshot parking(String id, String addr, int tol) {
             var d = new DeviceSnapshot();
-            d.deviceId = id; d.type = "ParkingCamera"; d.address = addr; d.toleranceSec = tol;
+            d.deviceId = id;
+            d.type = "ParkingCamera";
+            d.address = addr;
+            d.toleranceSec = tol;
             return d;
         }
+
         public static DeviceSnapshot trafficLight(String id, String addr, boolean principalIsA) {
             var d = new DeviceSnapshot();
-            d.deviceId = id; d.type = "TrafficLight"; d.address = addr; d.principalIsA = principalIsA;
+            d.deviceId = id;
+            d.type = "TrafficLight";
+            d.address = addr;
+            d.principalIsA = principalIsA;
             return d;
         }
+
         public static DeviceSnapshot securityCam(String id, String addr) {
             var d = new DeviceSnapshot();
-            d.deviceId = id; d.type = "SecurityCamera"; d.address = addr;
+            d.deviceId = id;
+            d.type = "SecurityCamera";
+            d.address = addr;
             return d;
         }
     }

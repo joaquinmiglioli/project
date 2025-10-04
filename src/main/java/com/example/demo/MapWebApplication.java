@@ -26,7 +26,6 @@ public class MapWebApplication {
     @Bean
     public AppContext appContext() {
         ctx = new AppContext(); // ← Solo se crea acá, una sola vez
-        ctx.trafficLightCycleService.startAll(); // Iniciamos el ciclo de semáforos
         return ctx;
     }
 
@@ -38,7 +37,7 @@ public class MapWebApplication {
         if (ctx != null) {
             System.out.println("Saving state and stopping services...");
             ctx.saveOnExit();
-            System.out.println("✅ Estado guardado. Cerrando aplicación.");
+            System.out.println("✅ Status saved. Closing app.");
         }
     }
 }

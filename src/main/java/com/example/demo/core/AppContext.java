@@ -42,9 +42,9 @@ public final class AppContext {
         // ====== Iniciar el ciclo en todos los semáforos cargados ======
         if (!state.tlStates.isEmpty()) {
             this.trafficLightCycleService.startAll();
-            System.out.println("✅ Ciclos de semáforos iniciados correctamente.");
+            System.out.println("✅ Semaphores cycle started succesfully.");
         } else {
-            System.out.println("⚠️ No se encontraron semáforos para iniciar ciclos.");
+            System.out.println("⚠️ No semaphores were found to start a cycle.");
         }
     }
 

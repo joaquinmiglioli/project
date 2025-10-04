@@ -57,17 +57,15 @@ public class FineEmissionService {
         });
     }
 
-    /**
-     * ✅ Se ejecuta automáticamente cuando ocurre una violación.
-     */
+    /** Se ejecuta automáticamente cuando ocurre una violación. */
     private void onViolation(ViolationService.Violation v) {
         if (v.type == ViolationService.Type.SERVICE_CALL) return;
 
         FineType type = switch (v.type) {
-            case SPEEDING         -> fineTypeService.getByCode("SPEEDING");
-            case ILLEGAL_PARKING  -> fineTypeService.getByCode("ILLEGAL_PARKING");
-            case RED_LIGHT        -> fineTypeService.getByCode("RED_LIGHT");
-            default               -> fineTypeService.getByCode("UNKNOWN");
+            case SPEEDING        -> fineTypeService.getByCode("SPEEDING");
+            case ILLEGAL_PARKING -> fineTypeService.getByCode("ILLEGAL_PARKING");
+            case RED_LIGHT       -> fineTypeService.getByCode("RED_LIGHT");
+            default              -> fineTypeService.getByCode("UNKNOWN");
         };
 
         CalcResult calc = calcAmountAndPoints(v, type);
@@ -80,56 +78,59 @@ public class FineEmissionService {
         String color   = vehicleService.colorFor(v.plate);
         String barcode = composeBarcode(fineNumber, calc.amount());
 
-        // ✅ Foto aleatoria entre las de anomalías
+        // Foto: carpeta específica de multas
         String photo = chooseRandomAnomalyPhoto();
 
-        // ✅ Generar PDF
         Path pdf = PdfGenerator.generateFinePDF(
                 outDir, fineNumber, v, type, calc, address, owner, brand, model, color, barcode, photo
         );
         System.out.println("✅ Fine emitted: " + pdf.toAbsolutePath());
 
-        // ✅ Notificar al nuevo controlador de multas
+        // Notificar a frontend
         FineNotificationController.updateLastFine(
-                fineNumber,
-                v.plate,
-                type.getDescription(),
-                pdf.toAbsolutePath().toString()
+                fineNumber, v.plate, type.getDescription(), pdf.toAbsolutePath().toString()
         );
     }
 
-    /**
-     * 📸 Selecciona aleatoriamente una imagen de infracción desde /static/images/
-     */
+    /** Selecciona una imagen desde /static/images/fines y devuelve SOLO el filename. */
     private String chooseRandomAnomalyPhoto() {
-        Path imagesDir = Paths.get("src/main/resources/static/images");
+        Path imagesDir = Paths.get("src/main/resources/static/images/fines");
         try {
-            List<Path> anomalyPhotos = Files.list(imagesDir)
-                    .filter(p -> p.getFileName().toString().startsWith("SecurityPhotoAnomaly"))
-                    .filter(p -> p.toString().endsWith(".jpg") || p.toString().endsWith(".png"))
+            List<Path> photos = Files.list(imagesDir)
+                    .filter(p -> {
+                        String n = p.getFileName().toString().toLowerCase();
+                        return n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png");
+                    })
                     .collect(Collectors.toList());
 
-            if (!anomalyPhotos.isEmpty()) {
-                Path randomPhoto = anomalyPhotos.get(random.nextInt(anomalyPhotos.size()));
-                System.out.println("📸 Foto seleccionada: " + randomPhoto.toString());
-                return randomPhoto.toString();
+            if (!photos.isEmpty()) {
+                Path rnd = photos.get(random.nextInt(photos.size()));
+                System.out.println("📸 Selected photo: " + rnd);
+                return rnd.getFileName().toString(); // SOLO nombre
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // fallback si no hay ninguna
-        return "src/main/resources/static/images/CameraPhoto.png";
+        return "fallback.png";
     }
 
-    /**
-     * 🧪 Simulación automática de multas
-     */
+    /** Simulación automática de multas (acepta IDs internos y "humanos"). */
     public void startSimulation() {
         if (simulationExecutor != null) return;
 
-        this.radarIds = deviceRegistry.getAllDeviceIds().stream().filter(id -> id.startsWith("RAD-")).collect(Collectors.toList());
-        this.parkingCamIds = deviceRegistry.getAllDeviceIds().stream().filter(id -> id.startsWith("PK-")).collect(Collectors.toList());
-        this.trafficLightIds = deviceRegistry.getAllDeviceIds().stream().filter(id -> id.startsWith("INT-")).collect(Collectors.toList());
+        // NOTA: getAllDeviceIds() devuelve SOLO internos.
+        // Para tolerar IDs "humanos" en la simulación, simplemente aceptamos ambos prefijos.
+        this.radarIds = deviceRegistry.getAllDeviceIds().stream()
+                .filter(id -> id.startsWith("RAD-") || id.startsWith("Radar "))
+                .collect(Collectors.toList());
+
+        this.parkingCamIds = deviceRegistry.getAllDeviceIds().stream()
+                .filter(id -> id.startsWith("PK-") || id.startsWith("Parking Camera "))
+                .collect(Collectors.toList());
+
+        this.trafficLightIds = deviceRegistry.getAllDeviceIds().stream()
+                .filter(id -> id.startsWith("INT-") || id.startsWith("Semaphore "))
+                .collect(Collectors.toList());
 
         if (radarIds.isEmpty() && parkingCamIds.isEmpty() && trafficLightIds.isEmpty()) {
             System.out.println("No devices found to start simulation.");

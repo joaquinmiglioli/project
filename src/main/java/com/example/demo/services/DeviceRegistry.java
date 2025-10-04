@@ -1,4 +1,3 @@
-// com/example/demo/services/DeviceRegistry.java
 package com.example.demo.services;
 
 import org.springframework.stereotype.Service;
@@ -6,33 +5,35 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/** Registro sencillo de direcciones por dispositivo (RAD-1, PK-3, INT-5, CAM-2, etc.). */
+
 @Service
 public class DeviceRegistry {
     private final Map<String, String> addressById = new HashMap<>();
 
     public DeviceRegistry() {
-        // --- Security Cameras ---
+        // --- Security Cameras (internos) ---
         addressById.put("CAM-1", "Av. Ejemplo 100");
         addressById.put("CAM-2", "Av. Ejemplo 200");
         addressById.put("CAM-3", "Av. Ejemplo 300");
         addressById.put("CAM-4", "Av. Ejemplo 400");
         addressById.put("CAM-5", "Av. Ejemplo 500");
 
-        // --- Radars ---
+        // --- Radars (internos) ---
         addressById.put("RAD-1", "Ruta 1 km 12");
         addressById.put("RAD-2", "Ruta 2 km 5");
         addressById.put("RAD-3", "Ruta 3 km 33");
         addressById.put("RAD-4", "Ruta 4 km 7");
 
-        // --- Parking Cameras ---
+        // --- Parking Cameras (internos) ---
         addressById.put("PK-1", "Calle Parque 101");
         addressById.put("PK-2", "Calle Parque 202");
         addressById.put("PK-3", "Calle Parque 303");
         addressById.put("PK-4", "Calle Parque 404");
 
-        // --- Traffic Lights (INT-1..INT-22) ---
+        // --- Traffic Lights (internos INT-1..INT-22) ---
         addressById.put("INT-1",  "Esq. A y B 1");
         addressById.put("INT-2",  "Esq. A y B 2");
         addressById.put("INT-3",  "Esq. A y B 3");
@@ -57,17 +58,51 @@ public class DeviceRegistry {
         addressById.put("INT-22", "Esq. A y B 22");
     }
 
-    /** Cambiar o cargar direcciones en runtime (si querés). */
+    // Patrones "humanos" → internos
+    private static final Pattern P_SEM = Pattern.compile("^\\s*Semaphore\\s+(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern P_RAD = Pattern.compile("^\\s*Radar\\s+(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern P_PK  = Pattern.compile("^\\s*Parking\\s+Camera\\s+(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern P_CAM = Pattern.compile("^\\s*Camera\\s+(\\d+)\\s*$", Pattern.CASE_INSENSITIVE);
+
+    /** Normaliza IDs "humanos" del JSON a IDs internos (INT-, RAD-, PK-, CAM-). */
+    private String normalizeToInternal(String deviceId) {
+        if (deviceId == null) return null;
+        String s = deviceId.trim();
+
+        Matcher m;
+        m = P_SEM.matcher(s); if (m.find()) return "INT-" + m.group(1);
+        m = P_RAD.matcher(s); if (m.find()) return "RAD-" + m.group(1);
+        m = P_PK.matcher(s);  if (m.find()) return "PK-" + m.group(1);
+        m = P_CAM.matcher(s); if (m.find()) return "CAM-" + m.group(1);
+
+        // Si no matchea, devolvemos tal cual (ya interno o desconocido)
+        return s;
+    }
+
+    /** Permite configurar/cambiar direcciones en runtime usando IDs internos. */
     public void setAddress(String deviceId, String address) {
         addressById.put(deviceId, address);
     }
 
-    /** Siempre devuelve algo: si no está configurado, devuelve un texto explícito. */
+    /**
+     * Devuelve la dirección para un deviceId. Soporta:
+     * - IDs internos (búsqueda directa)
+     * - IDs "humanos" (se normaliza a interno y se busca)
+     */
     public String addressFor(String deviceId) {
-        return addressById.getOrDefault(deviceId, "SIN DIRECCIÓN (“" + deviceId + "”)");
+        if (deviceId == null) return "SIN DIRECCIÓN (“null”)";
+
+        // 1) Intento directo (si ya vienen internos)
+        String addr = addressById.get(deviceId);
+        if (addr != null) return addr;
+
+        // 2) Intento normalizando "humanos" → internos
+        String norm = normalizeToInternal(deviceId);
+        addr = addressById.get(norm);
+        return addr != null ? addr : "SIN DIRECCIÓN (“" + deviceId + "”)";
     }
 
-    /** Devuelve todos los IDs de dispositivos registrados. */
+    /** Devuelve todos los IDs internos conocidos. */
     public Set<String> getAllDeviceIds() {
         return addressById.keySet();
     }
