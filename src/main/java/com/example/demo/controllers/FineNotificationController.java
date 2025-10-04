@@ -53,10 +53,10 @@ public class FineNotificationController {
 
         // Mensaje HTML que el frontend mostrará en el toast
         lastHtmlMessage = """
-            🚨 <b>Nueva multa generada</b><br>
-            📄 Número: <b>%s</b><br>
-            🚗 Patente: <b>%s</b><br>
-            ⚠️ Infracción: <b>%s</b>
+            🚨 <b>New fine generated</b><br>
+            📄 Number: <b>%s</b><br>
+            🚗 Plate: <b>%s</b><br>
+            ⚠️ Violation: <b>%s</b>
         """.formatted(fineNumber, plate, type);
     }
 }

@@ -343,7 +343,7 @@
           const data = await res.json();
           addDevices(data);
         }catch(err){
-          console.warn('No se pudo cargar /api/devices.', err);
+          console.warn('Could not load /api/devices.', err);
         }
       }
       loadDevices();
@@ -370,7 +370,7 @@
             window.updateSemaphoreStatus(tl.id, tl.a, tl.b);
           });
         } catch (e) {
-          console.error('❌ Error actualizando semáforos:', e);
+          console.error('❌ Error updating semaphores:', e);
         }
       }
       setInterval(updateTrafficLights, 3000);
@@ -396,18 +396,18 @@
           if (!data || (Object.keys(data).length===0)) {
             const text = await res.text();
             if (text && text.trim() !== "") {
-              showToastCentered("🚨 Nueva multa generada", "Se creó el PDF de la infracción.");
+              showToastCentered("🚨 New fine generated", "Violation PDF created.");
               await fetch('/api/clearFine');
             }
             return;
           }
           if (data.fineNumber || data.plate || data.type) {
-            const subtitle = `Nº ${data.fineNumber ?? '-'} • ${data.type ?? 'Infracción'} • ${data.plate ?? ''}`;
-            showToastCentered("🚨 Nueva multa generada", subtitle);
+            const subtitle = `Nº ${data.fineNumber ?? '-'} • ${data.type ?? 'Violation'} • ${data.plate ?? ''}`;
+            showToastCentered("🚨 New fine generated", subtitle);
             await fetch('/api/clearFine');
           }
         } catch (e) {
-          console.error('❌ Error consultando multas:', e);
+          console.error('❌ Error consulting fines:', e);
         }
       }
       setInterval(checkForFines, 5000);

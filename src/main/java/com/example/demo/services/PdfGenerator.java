@@ -5,7 +5,7 @@ import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.springframework.stereotype.Service; //aaaaaaaa
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-@Service
+/*@Service*/
 public final class PdfGenerator {
 
     private static final DateTimeFormatter TS_FMT =
@@ -95,7 +95,7 @@ public final class PdfGenerator {
                     y -= (imgH + 20);
                     cs.drawImage(img, margin, y, imgW, imgH);
                 } else {
-                    System.out.println("⚠️ No se pudo cargar la imagen para el PDF.");
+                    System.out.println("⚠️ Could not load PDF image");
                 }
 
                 // ===== Amount =====
@@ -116,7 +116,7 @@ public final class PdfGenerator {
             }
 
             doc.save(out.toFile());
-            System.out.println("✅ PDF generado en: " + out.toAbsolutePath());
+            System.out.println("✅ PDF generated in: " + out.toAbsolutePath());
 
         } catch (Exception e) {
             throw new RuntimeException("Error generating PDF: " + e.getMessage(), e);
@@ -129,20 +129,23 @@ public final class PdfGenerator {
      * Carga la imagen desde la carpeta "static/images".
      * Ejemplo de uso: loadImageFromStatic(doc, "CameraPhoto.png");
      */
-    private static PDImageXObject loadImageFromStatic(PDDocument doc, String fileName) {
+    private static PDImageXObject loadImageFromStatic(PDDocument doc, String nameOrPath) {
         try {
-            File f = new File("src/main/resources/static/images/" + fileName);
+            File f = (nameOrPath.contains("/") || nameOrPath.contains("\\"))
+                    ? new File(nameOrPath) // absoluto (por si algún día lo usás así)
+                    : new File("src/main/resources/static/images/fines/" + nameOrPath); // carpeta de multas
+
             if (!f.exists()) {
-                System.out.println("⚠️ Imagen no encontrada: " + f.getAbsolutePath());
+                System.out.println("⚠️ Image not found: " + f.getAbsolutePath());
                 return null;
             }
-            System.out.println("📁 Cargando imagen desde: " + f.getAbsolutePath());
             return PDImageXObject.createFromFileByContent(f, doc);
         } catch (IOException e) {
-            System.out.println("❌ Error al cargar imagen: " + e.getMessage());
+            System.out.println("❌ Error loading image: " + e.getMessage());
             return null;
         }
     }
+
 
     private static void writeLine(PDPageContentStream cs, float x, float y, String text) throws IOException {
         cs.beginText();
