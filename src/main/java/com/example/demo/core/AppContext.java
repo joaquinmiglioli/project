@@ -2,6 +2,10 @@ package com.example.demo.core;
 
 import com.example.demo.services.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Contenedor de servicios + estado compartido, para inyectar en el Controller. */
 public final class AppContext {
@@ -41,8 +45,30 @@ public final class AppContext {
 
         // ====== Iniciar el ciclo en todos los semáforos cargados ======
         if (!state.tlStates.isEmpty()) {
-            this.trafficLightCycleService.startAll();
-            System.out.println("✅ Semaphores cycle started succesfully.");
+            // Separar semáforos por calle principal para crear una "onda verde" por cada una.
+            // Nota: esta agrupación se basa en la configuración de `devices.json`.
+            List<String> independenciaIds = new ArrayList<>();
+            for (int i = 1; i <= 27; i++) { independenciaIds.add("Semaphore " + i); }
+
+            List<String> rivadaviaIds = new ArrayList<>();
+            for (int i = 28; i <= 31; i++) { rivadaviaIds.add("Semaphore " + i); }
+
+            // Filtrar y ordenar los IDs que realmente existen en el estado actual
+            independenciaIds = independenciaIds.stream().filter(state.tlStates::containsKey).collect(Collectors.toList());
+            rivadaviaIds = rivadaviaIds.stream().filter(state.tlStates::containsKey).collect(Collectors.toList());
+
+            // Iniciar cascada para cada calle
+            if (!independenciaIds.isEmpty()) {
+                this.trafficLightCycleService.startCascade(independenciaIds, 1);
+                System.out.println("✅ Independencia cascade started.");
+            }
+            if (!rivadaviaIds.isEmpty()) {
+                this.trafficLightCycleService.startCascade(rivadaviaIds, 1);
+                System.out.println("✅ Rivadavia cascade started.");
+            }
+
+            System.out.println("✅ All semaphore cascade cycles started succesfully.");
+
         } else {
             System.out.println("⚠️ No semaphores were found to start a cycle.");
         }

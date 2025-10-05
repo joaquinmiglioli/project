@@ -4,17 +4,15 @@ import com.example.demo.core.CentralState;
 import Devices.TrafficLightStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Function;
 
 @Service
 public class TrafficLightCycleService {
 
     // ===== Duraciones realistas (segundos) =====
-    private static final int T_GREEN_A = 40; // A verde
-    private static final int T_GREEN_B = 30; // B verde
+    private static final int T_GREEN_A = 40; // A verde (arteria principal)
+    private static final int T_GREEN_B = 30; // B verde (lateral)
     private static final int T_YELLOW  = 4;  // ámbar
     private static final int T_ALL_RED = 2;  // despeje (ambos rojo)
 
@@ -30,7 +28,11 @@ public class TrafficLightCycleService {
         this.state = Objects.requireNonNull(state, "state");
     }
 
-    /** Programa todas las intersecciones con delay escalonado 0s,1s,2s,... */
+    // =====================================================================================
+    // API pública
+    // =====================================================================================
+
+    /** Programa todas las intersecciones con delay escalonado 0s,1s,2s,... (modo normal). */
     public void startAll() {
         int delay = 0;
         for (Map.Entry<String, CentralState.TLState> e : state.tlStates.entrySet()) {
@@ -42,35 +44,141 @@ public class TrafficLightCycleService {
         }
     }
 
+    /** Cancela todas las tareas (no apaga el scheduler para poder reiniciar). */
     public void stopAll() {
         futures.values().forEach(f -> f.cancel(true));
         futures.clear();
-        scheduler.shutdownNow();
         System.out.println("⏹️ Ciclos detenidos.");
     }
 
+    /** Cancela una sola intersección. */
     public void stopOne(String semaphoreId) {
         var f = futures.remove(semaphoreId);
         if (f != null) f.cancel(true);
     }
 
-    // ===== Programación por intersección =====
+    /**
+     * MODO CASCADA: todos arrancan ROJO y luego, de abajo hacia arriba (orderedIds),
+     * cada uno inicia su ciclo 1s después del anterior (configurable con stepSec).
+     *
+     * @param orderedIds ids en orden de “abajo → arriba” (el primero inicia primero)
+     * @param stepSec    separación entre inicios (por defecto 1s)
+     */
+    public void startCascade(List<String> orderedIds, int stepSec) {
+        // Detener solo los semáforos de esta cascada para no interferir con otras
+        for (String id : orderedIds) {
+            stopOne(id);
+        }
+
+        // 1) Ponerlos en rojo ya mismo (visualmente: todo rojo al inicio).
+        for (String id : orderedIds) {
+            var tl = state.tlStates.get(id);
+            if (tl == null) continue;
+            // La vía A será la prioritaria para la onda
+            tl.principalIsA = true;
+            emit(id, Phase.BOTH_RED_1, true);
+        }
+
+        // 2) Programar el inicio escalonado: idx*stepSec
+        final long cascadeStartNanos = System.nanoTime();
+        for (int i = 0; i < orderedIds.size(); i++) {
+            String id = orderedIds.get(i);
+            var tl = state.tlStates.get(id);
+            if (tl == null) continue;
+            int delay = Math.max(0, i * Math.max(1, stepSec));
+            futures.computeIfAbsent(id, __ -> startOneCascade(id, tl, cascadeStartNanos, delay));
+            System.out.printf("⏩ Cascade id=%s startDelay=%ds%n", id, delay);
+        }
+    }
+
+    // =====================================================================================
+    // Programación por intersección (modo normal, con initialDelay y emisión inmediata)
+    // =====================================================================================
 
     private ScheduledFuture<?> startOneWithInitialDelay(String id, CentralState.TLState tl, int delaySec) {
         final boolean principalIsA = tl.principalIsA;
-
         Phase start = deduceStartPhase(tl);
         var clock = new PhaseClock(start);
 
         System.out.printf("▶ Ciclo %s  initialDelay=%ds  principalIsA=%s  startPhase=%s%n",
                 id, delaySec, principalIsA, start);
 
-        // Primera emisión ocurre al primer tick tras el delay (para que se note el escalonamiento).
-        return scheduler.scheduleAtFixedRate(
-                new TickTask(id, principalIsA, clock, this::emitTri),
-                delaySec, 1, TimeUnit.SECONDS
-        );
+        // Emito inmediatamente el estado inicial (para front con polling)
+        emit(id, start, principalIsA);
+
+        // Emite sólo cuando cambia la fase
+        Runnable task = new Runnable() {
+            Phase last = start;
+            @Override public void run() {
+                try {
+                    clock.tick();
+                    Phase now = clock.currentPhase();
+                    if (now != last) {
+                        emit(id, now, principalIsA);
+                        last = now;
+                    }
+                } catch (Throwable t) { t.printStackTrace(); }
+            }
+        };
+        return scheduler.scheduleAtFixedRate(task, delaySec, 1, TimeUnit.SECONDS);
     }
+
+    // =====================================================================================
+    // Programación por intersección (modo cascada): temporización absoluta
+    // =====================================================================================
+
+    private ScheduledFuture<?> startOneCascade(String id, CentralState.TLState tl, long cascadeStartNanos, int offsetSec) {
+        final boolean principalIsA = true; // en cascada usamos A como vía prioritaria
+
+        Runnable task = new Runnable() {
+            Phase lastEmittedPhase = null;
+            final int totalCycleSec = cycleLengthSec();
+
+            @Override
+            public void run() {
+                try {
+                    long elapsedNanos = System.nanoTime() - cascadeStartNanos;
+                    long elapsedSec = TimeUnit.NANOSECONDS.toSeconds(elapsedNanos);
+                    long effectiveElapsedSec = elapsedSec - offsetSec;
+
+                    Phase now;
+                    if (effectiveElapsedSec < 0) {
+                        now = Phase.BOTH_RED_1;
+                    } else {
+                        long secInCycle = effectiveElapsedSec % totalCycleSec;
+                        if (secInCycle < T_GREEN_A) {
+                            now = Phase.A_GREEN__B_RED;
+                        } else if (secInCycle < T_GREEN_A + T_YELLOW) {
+                            now = Phase.A_YELLOW__B_RED;
+                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED) {
+                            now = Phase.BOTH_RED_1;
+                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED + T_GREEN_B) {
+                            now = Phase.A_RED__B_GREEN;
+                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED + T_GREEN_B + T_YELLOW) {
+                            now = Phase.A_RED__B_YELLOW;
+                        } else {
+                            now = Phase.BOTH_RED_2;
+                        }
+                    }
+
+                    if (now != lastEmittedPhase) {
+                        emit(id, now, principalIsA);
+                        lastEmittedPhase = now;
+                    }
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+        };
+
+        // Chequear el estado 4 veces por segundo para que sea bien responsivo.
+        return scheduler.scheduleAtFixedRate(task, 0, 250, TimeUnit.MILLISECONDS);
+    }
+
+
+    // =====================================================================================
+    // Core: fases, reloj y utilidades
+    // =====================================================================================
 
     private Phase deduceStartPhase(CentralState.TLState s) {
         if (s == null) return Phase.A_GREEN__B_RED;
@@ -99,13 +207,13 @@ public class TrafficLightCycleService {
         }
 
         var st = state.tlStates.get(id);
-        if (st != null) { st.a = a; st.b = b; }
-    }
-    private void emitTri(String id, Phase phase, Boolean principalIsA) {
-        emit(id, phase, principalIsA.booleanValue());
+        if (st != null) {
+            st.a = a; st.b = b;
+            // hook SSE opcional: hub.broadcastEstado(id, st);
+        }
     }
 
-    // ===== 6 fases coherentes con despeje =====
+    // 6 fases coherentes con despeje
     private enum Phase {
         A_GREEN__B_RED  (T_GREEN_A, TrafficLightStatus.GREEN,  TrafficLightStatus.RED),
         A_YELLOW__B_RED (T_YELLOW,  TrafficLightStatus.YELLOW, TrafficLightStatus.RED),
@@ -120,10 +228,7 @@ public class TrafficLightCycleService {
         int seconds() { return seconds; }
         TrafficLightStatus aStatus() { return a; }
         TrafficLightStatus bStatus() { return b; }
-        Phase next() {
-            Phase[] all = values();
-            return all[(ordinal() + 1) % all.length];
-        }
+        Phase next() { Phase[] all = values(); return all[(ordinal() + 1) % all.length]; }
     }
 
     /** Reloj por intersección: avanza 1Hz y rota fases según sus duraciones. */
@@ -144,30 +249,8 @@ public class TrafficLightCycleService {
         Phase currentPhase() { return phase; }
     }
 
-    /** Tarea 1Hz: avanza el reloj y emite estado. */
-    private static final class TickTask implements Runnable {
-        private final String id;
-        private final boolean principalIsA;
-        private final PhaseClock clock;
-        private final TriConsumer<String, Phase, Boolean> emitter;
-
-        TickTask(String id, boolean principalIsA, PhaseClock clock,
-                 TriConsumer<String, Phase, Boolean> serviceEmit) {
-            this.id = id;
-            this.principalIsA = principalIsA;
-            this.clock = clock;
-            this.emitter = serviceEmit;
-        }
-
-        @Override public void run() {
-            try {
-                clock.tick(); // avanza 1s
-                emitter.accept(id, clock.currentPhase(), principalIsA);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-        }
+    // ===== Utilidad opcional: duración de ciclo total =====
+    public static int cycleLengthSec() {
+        return T_GREEN_A + T_YELLOW + T_ALL_RED + T_GREEN_B + T_YELLOW + T_ALL_RED;
     }
-
-    @FunctionalInterface private interface TriConsumer<A,B,C> { void accept(A a, B b, C c); }
 }
