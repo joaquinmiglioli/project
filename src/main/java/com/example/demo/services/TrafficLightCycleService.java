@@ -59,7 +59,7 @@ public class TrafficLightCycleService {
 
     /**
      * MODO CASCADA: todos arrancan ROJO y luego, de abajo hacia arriba (orderedIds),
-     * cada uno inicia su ciclo 1s después del anterior (configurable con stepSec).
+     * cada uno inicia su ciclo stepSec después del anterior.
      *
      * @param orderedIds ids en orden de “abajo → arriba” (el primero inicia primero)
      * @param stepSec    separación entre inicios (por defecto 1s)
@@ -79,15 +79,15 @@ public class TrafficLightCycleService {
             emit(id, Phase.BOTH_RED_1, true);
         }
 
-        // 2) Programar el inicio escalonado: idx*stepSec
+        // 2) Programar el inicio escalonado: idx*stepSec, con tiempo ABSOLUTO compartido
         final long cascadeStartNanos = System.nanoTime();
         for (int i = 0; i < orderedIds.size(); i++) {
             String id = orderedIds.get(i);
             var tl = state.tlStates.get(id);
             if (tl == null) continue;
-            int delay = Math.max(0, i * Math.max(1, stepSec));
-            futures.computeIfAbsent(id, __ -> startOneCascade(id, tl, cascadeStartNanos, delay));
-            System.out.printf("⏩ Cascade id=%s startDelay=%ds%n", id, delay);
+            int offsetSec = i * Math.max(1, stepSec);
+            futures.computeIfAbsent(id, __ -> startOneCascade(id, tl, cascadeStartNanos, offsetSec));
+            System.out.printf("⏩ Cascade id=%s startDelay=%ds%n", id, offsetSec);
         }
     }
 
@@ -123,44 +123,56 @@ public class TrafficLightCycleService {
         return scheduler.scheduleAtFixedRate(task, delaySec, 1, TimeUnit.SECONDS);
     }
 
-    // =====================================================================================
-    // Programación por intersección (modo cascada): temporización absoluta
-    // =====================================================================================
+    // ===================================================================================================
+    // Programación por intersección (modo cascada): temporización ABSOLUTA en milisegundos
+    // ===================================================================================================
 
     private ScheduledFuture<?> startOneCascade(String id, CentralState.TLState tl, long cascadeStartNanos, int offsetSec) {
         final boolean principalIsA = true; // en cascada usamos A como vía prioritaria
 
+        // Duraciones en milisegundos (evita cuantización por segundos)
+        final long A_MS   = T_GREEN_A * 1000L;
+        final long Y_MS   = T_YELLOW  * 1000L;
+        final long AR_MS  = T_ALL_RED * 1000L;
+        final long B_MS   = T_GREEN_B * 1000L;
+
+        // Umbrales acumulados en el ciclo
+        final long CYCLE_MS = A_MS + Y_MS + AR_MS + B_MS + Y_MS + AR_MS;
+        final long T1 = A_MS;                // A_VERDE → A_AMBAR
+        final long T2 = T1 + Y_MS;           // A_AMBAR → BOTH_RED_1
+        final long T3 = T2 + AR_MS;          // BOTH_RED_1 → B_VERDE
+        final long T4 = T3 + B_MS;           // B_VERDE → B_AMBAR
+        final long T5 = T4 + Y_MS;           // B_AMBAR → BOTH_RED_2
+        // T6 = CYCLE_MS                    // BOTH_RED_2 → (vuelve a 0)
+
         Runnable task = new Runnable() {
             Phase lastEmittedPhase = null;
-            final int totalCycleSec = cycleLengthSec();
 
             @Override
             public void run() {
                 try {
-                    long elapsedNanos = System.nanoTime() - cascadeStartNanos;
-                    long elapsedSec = TimeUnit.NANOSECONDS.toSeconds(elapsedNanos);
-                    long effectiveElapsedSec = elapsedSec - offsetSec;
+                    // Tiempo transcurrido en ms desde el inicio compartido de la cascada
+                    long elapsedMs = (System.nanoTime() - cascadeStartNanos) / 1_000_000L;
+
+                    // Offset propio del semáforo (en ms)
+                    long effectiveMs = elapsedMs - (offsetSec * 1000L);
 
                     Phase now;
-                    if (effectiveElapsedSec < 0) {
+                    if (effectiveMs < 0) {
+                        // Antes de su turno: permanece rojo
                         now = Phase.BOTH_RED_1;
                     } else {
-                        long secInCycle = effectiveElapsedSec % totalCycleSec;
-                        if (secInCycle < T_GREEN_A) {
-                            now = Phase.A_GREEN__B_RED;
-                        } else if (secInCycle < T_GREEN_A + T_YELLOW) {
-                            now = Phase.A_YELLOW__B_RED;
-                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED) {
-                            now = Phase.BOTH_RED_1;
-                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED + T_GREEN_B) {
-                            now = Phase.A_RED__B_GREEN;
-                        } else if (secInCycle < T_GREEN_A + T_YELLOW + T_ALL_RED + T_GREEN_B + T_YELLOW) {
-                            now = Phase.A_RED__B_YELLOW;
-                        } else {
-                            now = Phase.BOTH_RED_2;
-                        }
+                        long msInCycle = effectiveMs % CYCLE_MS;
+
+                        if      (msInCycle < T1) now = Phase.A_GREEN__B_RED;
+                        else if (msInCycle < T2) now = Phase.A_YELLOW__B_RED;
+                        else if (msInCycle < T3) now = Phase.BOTH_RED_1;
+                        else if (msInCycle < T4) now = Phase.A_RED__B_GREEN;
+                        else if (msInCycle < T5) now = Phase.A_RED__B_YELLOW;
+                        else                     now = Phase.BOTH_RED_2;
                     }
 
+                    // Emitimos sólo en cambios de fase reales
                     if (now != lastEmittedPhase) {
                         emit(id, now, principalIsA);
                         lastEmittedPhase = now;
@@ -171,10 +183,9 @@ public class TrafficLightCycleService {
             }
         };
 
-        // Chequear el estado 4 veces por segundo para que sea bien responsivo.
-        return scheduler.scheduleAtFixedRate(task, 0, 250, TimeUnit.MILLISECONDS);
+        // Sampleo más fino para captar los bordes de fase con precisión (< 1s)
+        return scheduler.scheduleAtFixedRate(task, 0, 100, TimeUnit.MILLISECONDS);
     }
-
 
     // =====================================================================================
     // Core: fases, reloj y utilidades

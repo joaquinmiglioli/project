@@ -59,11 +59,11 @@ public final class AppContext {
 
             // Iniciar cascada para cada calle
             if (!independenciaIds.isEmpty()) {
-                this.trafficLightCycleService.startCascade(independenciaIds, 1);
+                this.trafficLightCycleService.startCascade(independenciaIds, 5); // 5s de separación
                 System.out.println("✅ Independencia cascade started.");
             }
             if (!rivadaviaIds.isEmpty()) {
-                this.trafficLightCycleService.startCascade(rivadaviaIds, 1);
+                this.trafficLightCycleService.startCascade(rivadaviaIds, 5); // 5s de separación
                 System.out.println("✅ Rivadavia cascade started.");
             }
 
