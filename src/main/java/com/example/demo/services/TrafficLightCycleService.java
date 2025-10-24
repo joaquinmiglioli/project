@@ -48,7 +48,7 @@ public class TrafficLightCycleService {
     public void stopAll() {
         futures.values().forEach(f -> f.cancel(true));
         futures.clear();
-        System.out.println("⏹️ Ciclos detenidos.");
+        System.out.println("⏹️ Stopped cycles.");
     }
 
     /** Cancela una sola intersección. */
