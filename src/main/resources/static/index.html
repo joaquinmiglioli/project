@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>City Monitor</title>
+    <title>City2 Monitor</title>
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -12,179 +12,94 @@
         html,body,#map{height:100%;margin:0}
         .leaflet-popup-content{font:13px/1.35 sans-serif}
 
-        /* ===== Panel (diseño original) ===== */
-        .devices-control{
-          position:absolute;
-          top:20px; right:20px;
-          z-index:1000;
-        }
+        /* ===== Panel (diseño) ===== */
+        .devices-control{position:absolute; top:20px; right:20px; z-index:1000;}
         .devices-panel{
-          background:#fff;
-          border:1px solid #d1d5db;
-          border-radius:12px;
-          padding:12px;
-          box-shadow:0 4px 10px rgba(0,0,0,0.15);
-          min-width:220px;
+          background:#fff; border:1px solid #d1d5db; border-radius:12px; padding:12px;
+          box-shadow:0 4px 10px rgba(0,0,0,0.15); min-width:220px;
           font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
         }
-        .devices-title{
-          font-weight:600;
-          margin-bottom:8px;
-          text-align:center;
-        }
-        .devices-option{
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          padding:8px 0;
-          gap:10px;
-          font-size:14px;
-        }
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 44px;
-          height: 26px;
-          flex-shrink: 0;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .switch-slider {
-          position: absolute; cursor: pointer; inset: 0;
-          background: #d1d5db; border-radius: 999px; transition: background .2s ease;
-        }
+        .devices-title{font-weight:600; margin-bottom:8px; text-align:center;}
+        .devices-option{display:flex; align-items:center; justify-content:space-between; padding:8px 0; gap:10px; font-size:14px;}
+        .switch{position:relative; display:inline-block; width:44px; height:26px; flex-shrink:0;}
+        .switch input{opacity:0; width:0; height:0;}
+        .switch-slider{position:absolute; cursor:pointer; inset:0; background:#d1d5db; border-radius:999px; transition:background .2s ease;}
         .switch-slider::before{
           content:""; position:absolute; height:22px; width:22px; left:2px; top:2px;
-          background:#fff; border-radius:999px; box-shadow:0 1px 3px rgba(0,0,0,.25);
-          transition: transform .2s ease;
+          background:#fff; border-radius:999px; box-shadow:0 1px 3px rgba(0,0,0,.25); transition: transform .2s ease;
         }
-        .switch input:checked + .switch-slider{ background:#22c55e; }
-        .switch input:checked + .switch-slider::before{ transform: translateX(18px); }
-        .switch input:focus-visible + .switch-slider{ outline:2px solid #2563eb; outline-offset:2px; }
-        @media (prefers-reduced-motion: reduce) {
-          .switch-slider, .switch-slider::before { transition: none; }
-        }
+        .switch input:checked + .switch-slider{background:#22c55e;}
+        .switch input:checked + .switch-slider::before{transform: translateX(18px);}
+        .switch input:focus-visible + .switch-slider{outline:2px solid #2563eb; outline-offset:2px;}
+        @media (prefers-reduced-motion: reduce){.switch-slider, .switch-slider::before{transition:none;}}
 
         /* ===== Toast centrado arriba ===== */
-        #toast-container {
-          position: fixed;
-          top: 18px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 2000;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-          pointer-events: none; /* no bloquea el mapa */
-          width: min(92%, 520px);
+        #toast-container{
+          position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:2000;
+          display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events:none; width:min(92%, 520px);
         }
-        .toast {
-          width: 100%;
-          background: #111827; /* gris oscuro elegante */
-          color: white;
-          padding: 12px 16px;
-          border-radius: 10px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-          font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
-          border: 1px solid rgba(255,255,255,0.08);
-          pointer-events: auto;
-          cursor: pointer;
-          overflow: hidden;
-          position: relative;
+        .toast{
+          width:100%; background:#111827; color:#fff; padding:12px 16px; border-radius:10px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.35); font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+          border:1px solid rgba(255,255,255,0.08); pointer-events:auto; cursor:pointer; overflow:hidden; position:relative;
           animation: toast-in 250ms ease-out, toast-hold 3.2s linear 250ms, toast-out 300ms ease-in 3.45s forwards;
         }
-        .toast .title {
-          font-weight: 700;
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 4px;
-        }
-        .toast .subtitle {
-          font-size: 13px;
-          color: #e5e7eb;
-          opacity: .95;
-        }
-        .toast::after{ /* barra de tiempo */
-          content:"";
-          position:absolute;
-          left:0; bottom:0; height:3px; width:100%;
-          background:#ef4444; /* rojo alerta */
-          animation: toast-bar 3.8s linear forwards;
-        }
-        @keyframes toast-in { from {opacity:0; transform: translate(-50%, -8px);} to {opacity:1; transform: translate(-50%, 0);} }
-        @keyframes toast-hold { from {opacity:1;} to {opacity:1;} }
-        @keyframes toast-out { to {opacity:0; transform: translate(-50%, -8px);} }
-        @keyframes toast-bar { from{width:100%} to{width:0%} }
+        .toast .title{font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; margin-bottom:4px;}
+        .toast .subtitle{font-size:13px; color:#e5e7eb; opacity:.95;}
+        .toast::after{content:""; position:absolute; left:0; bottom:0; height:3px; width:100%; background:#ef4444; animation: toast-bar 3.8s linear forwards;}
+        @keyframes toast-in{from{opacity:0; transform: translate(-50%, -8px);} to{opacity:1; transform: translate(-50%, 0);}}
+        @keyframes toast-hold{from{opacity:1;} to{opacity:1;}}
+        @keyframes toast-out{to{opacity:0; transform: translate(-50%, -8px);}}
+        @keyframes toast-bar{from{width:100%} to{width:0%}}
 
-        /* ===== Popups mejorados ===== */
-        .popup-card {
-          width: 240px;
-          border-radius: 12px;
-          overflow: hidden;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-          background: #fff;
-          font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
-        }
-        .popup-header {
-          display: flex; align-items: center; gap: 8px;
-          padding: 8px 10px; color: #fff; font-weight: 700; font-size: 14px;
-        }
-        .popup-body { padding: 10px; color: #111827; font-size: 13px; }
-        .popup-row { display:flex; justify-content: space-between; padding: 4px 0; }
-        .popup-k { color:#6b7280; }
-        .popup-v { font-weight:600; color:#111827; }
-        .ph-radar   { background:#b91c1c; }  /* rojo oscuro */
-        .ph-parking { background:#0b5; }     /* verde parking */
-        .ph-camera  { background:#2563eb; }  /* azul */
-        .ph-sema    { background:#6b7280; }  /* gris */
+        /* ===== Popups ===== */
+        .popup-card{width:240px; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb; box-shadow:0 8px 20px rgba(0,0,0,0.12); background:#fff; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
+        .popup-header{display:flex; align-items:center; gap:8px; padding:8px 10px; color:#fff; font-weight:700; font-size:14px;}
+        .popup-body{padding:10px; color:#111827; font-size:13px;}
+        .popup-row{display:flex; justify-content:space-between; padding:4px 0;}
+        .popup-k{color:#6b7280;} .popup-v{font-weight:600; color:#111827;}
+        .ph-radar{background:#b91c1c;} .ph-parking{background:#0b5;} .ph-camera{background:#2563eb;} .ph-sema{background:#6b7280;}
     </style>
 </head>
 <body>
 <div id="map" aria-label="City map"></div>
 
-<!-- Panel switches (diseño original) -->
+<!-- Panel switches -->
 <div class="devices-control">
     <div id="devicesPanel" class="devices-panel" role="group" aria-label="Show devices">
-        <div class="devices-title">Show Devices</div>
+        <div class="devices-title">Show devices</div>
 
         <div class="devices-option">
             <label for="chkRadars">Radars</label>
             <label class="switch" aria-label="Toggle Radars">
-                <input type="checkbox" id="chkRadars" checked>
-                <span class="switch-slider"></span>
+                <input type="checkbox" id="chkRadars" checked><span class="switch-slider"></span>
             </label>
         </div>
 
         <div class="devices-option">
             <label for="chkParking">Parking Cameras</label>
             <label class="switch" aria-label="Toggle Parking Cameras">
-                <input type="checkbox" id="chkParking" checked>
-                <span class="switch-slider"></span>
+                <input type="checkbox" id="chkParking" checked><span class="switch-slider"></span>
             </label>
         </div>
 
         <div class="devices-option">
             <label for="chkSecurity">Cameras</label>
             <label class="switch" aria-label="Toggle Cameras">
-                <input type="checkbox" id="chkSecurity" checked>
-                <span class="switch-slider"></span>
+                <input type="checkbox" id="chkSecurity" checked><span class="switch-slider"></span>
             </label>
         </div>
 
         <div class="devices-option">
             <label for="chkSemaphores">Semaphores</label>
             <label class="switch" aria-label="Toggle Semaphores">
-                <input type="checkbox" id="chkSemaphores" checked>
-                <span class="switch-slider"></span>
+                <input type="checkbox" id="chkSemaphores" checked><span class="switch-slider"></span>
             </label>
         </div>
     </div>
 </div>
 
-<!-- Contenedor de notificaciones -->
+<!-- Toasts -->
 <div id="toast-container"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -228,7 +143,7 @@
         }
       }
 
-      /* ================== POPUPS MEJORADOS ================== */
+      /* ================== POPUPS ================== */
       function popupCardHeader(type, title){
         const cls = (type==='radar') ? 'ph-radar'
                   : (type==='parking') ? 'ph-parking'
@@ -240,11 +155,38 @@
                     : '🚦';
         return `<div class="popup-header ${cls}">${emoji} ${title}</div>`;
       }
-      function popupRow(k, v){
-        return `<div class="popup-row"><span class="popup-k">${k}</span><span class="popup-v">${v}</span></div>`;
-      }
+      function popupRow(k, v){ return `<div class="popup-row"><span class="popup-k">${k}</span><span class="popup-v">${v}</span></div>`; }
       function popupHtml(type, id, rowsHtml){
         return `<div class="popup-card">${popupCardHeader(type, id)}<div class="popup-body">${rowsHtml}</div></div>`;
+      }
+
+      /* ================== REPAIR ================== */
+      async function repairDevice(id) {
+        try {
+          // alias GET si existe
+          let res = await fetch(`/api/devices/${encodeURIComponent(id)}/repair`, { method: 'GET' });
+          if (!res.ok) {
+            // fallback a POST action=REPAIR
+            res = await fetch(`/api/devices/${encodeURIComponent(id)}/status?action=REPAIR`, { method: 'POST' });
+          }
+          await loadDevices();
+        } catch (e) { console.error('repair fail', e); }
+      }
+      function maybeRepairButton(item) {
+        const st = String(item.status||'').toUpperCase();
+        if (st === 'ERROR' || st === 'YELLOW' || st === 'INTERMITTENT' || st === 'FAILURE') {
+          return `<div style="margin-top:8px;text-align:right">
+            <button class="btn-repair" data-id="${item.id}"
+              style="background:#10b981;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer">
+              Repair
+            </button>
+          </div>`;
+        }
+        return '';
+      }
+      function attachRepairHandler(popup, id) {
+        const btn = popup.getElement().querySelector('.btn-repair');
+        if (btn) btn.addEventListener('click', () => repairDevice(id));
       }
 
       /* ================== SWITCHES ================== */
@@ -281,8 +223,9 @@
             .bindPopup(popupHtml('radar', r.id,
               popupRow('Status', r.status||'?') +
               popupRow('Speed limit', (r.speedLimit ?? '-') + ' km/h') +
-              popupRow('Address', r.address || '-')
+              popupRow('Address', r.address || '-') + maybeRepairButton(r)
             ));
+          m.on('popupopen', ev => attachRepairHandler(ev.popup, r.id));
           m.addTo(groups.radars);
           deviceLayers.set(r.id, m);
           ftrs.push(m);
@@ -294,36 +237,39 @@
           const m = L.marker([p.lat, p.lng], { icon: ic })
             .bindPopup(popupHtml('parking', p.id,
               popupRow('Status', p.status||'?') +
-              popupRow('Tolerance', (p.toleranceTime ?? 0) + ' s') +
-              popupRow('Address', p.address || '-')
+              popupRow('Tolerance', (p.toleranceTime ?? p.toleranceSec ?? 0) + ' s') +
+              popupRow('Address', p.address || '-') + maybeRepairButton(p)
             ));
+          m.on('popupopen', ev => attachRepairHandler(ev.popup, p.id));
           m.addTo(groups.parking);
           deviceLayers.set(p.id, m);
           ftrs.push(m);
         });
 
-        // Security Cameras
-        (data.securityCameras||[]).forEach(c => {
+        // Security Cameras (ojo: la clave del backend es "cameras")
+        (data.cameras||[]).forEach(c => {
           const ic = isErrorStatus(c.status) ? ICONS.camera.err : ICONS.camera.ok;
           const m = L.marker([c.lat, c.lng], { icon: ic })
             .bindPopup(popupHtml('camera', c.id,
               popupRow('Status', c.status||'?') +
-              popupRow('Address', c.address || '-')
+              popupRow('Address', c.address || '-') + maybeRepairButton(c)
             ));
+          m.on('popupopen', ev => attachRepairHandler(ev.popup, c.id));
           m.addTo(groups.security);
           deviceLayers.set(c.id, m);
           ftrs.push(m);
         });
 
-        // Semaphores
-        (data.semaphoreControllers||[]).forEach(s => {
+        // Semaphores (clave del backend: "semaphores")
+        (data.semaphores||[]).forEach(s => {
           const cm = L.circleMarker([s.lat, s.lng], {
             radius: 7, fillOpacity: 0.95, color:'#000', weight:1,
-            fillColor: colorFor(s.status) /* status del principal si backend lo envía así */
+            fillColor: colorFor(s.status) // color por status general (A principal)
           }).bindPopup(popupHtml('sema', s.id,
             popupRow('Status A', s.statusA || s.status || '?') +
-            popupRow('Status B', s.statusB || '?')
+            popupRow('Status B', s.statusB || '?') + maybeRepairButton(s)
           ));
+          cm.on('popupopen', ev => attachRepairHandler(ev.popup, s.id));
           cm.addTo(groups.semaphores);
           deviceLayers.set(s.id, cm);
           ftrs.push(cm);
@@ -348,34 +294,29 @@
       }
       loadDevices();
 
-      /* ================== UPDATES EN VIVO ================== */
+      /* ================== UPDATES SEMÁFOROS ================== */
       window.updateSemaphoreStatus = (id, statusA, statusB) => {
         const m = deviceLayers.get(id);
         if(m && m.setStyle){
           m.setStyle({ fillColor: colorFor(statusA) });
           if (m.getPopup()){
             m.setPopupContent(popupHtml('sema', id,
-              popupRow('Status A', statusA||'?') + popupRow('Status B', statusB||'?')
+              popupRow('Status A', statusA||'?') + popupRow('Status B', statusB||'?') + maybeRepairButton({id, status: statusA})
             ));
           }
         }
       };
-
       async function updateTrafficLights(){
         try {
           const res = await fetch('/api/trafficlights');
           if(!res.ok) throw new Error('HTTP ' + res.status);
           const data = await res.json();
-          data.forEach(tl => {
-            window.updateSemaphoreStatus(tl.id, tl.a, tl.b);
-          });
-        } catch (e) {
-          console.error('❌ Error updating semaphores:', e);
-        }
+          data.forEach(tl => window.updateSemaphoreStatus(tl.id, tl.a, tl.b));
+        } catch (e) { console.error('❌ Error updating semaphores:', e); }
       }
-      setInterval(updateTrafficLights, 3000);
+      setInterval(updateTrafficLights, 500);
 
-      /* ================== TOAST (alerta de multa) ================== */
+      /* ================== TOAST MULTAS ================== */
       function showToastCentered(title, subtitle){
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -386,13 +327,11 @@
         toast.addEventListener('click', remover);
         setTimeout(remover, 4000);
       }
-
       async function checkForFines(){
         try {
           const res = await fetch('/api/lastFine', { cache: 'no-store' });
           if (!res.ok) return;
           const data = await res.json?.() ?? {};
-          // Soporta también backend que devuelva texto simple:
           if (!data || (Object.keys(data).length===0)) {
             const text = await res.text();
             if (text && text.trim() !== "") {
@@ -406,9 +345,7 @@
             showToastCentered("🚨 New fine generated", subtitle);
             await fetch('/api/clearFine');
           }
-        } catch (e) {
-          console.error('❌ Error consulting fines:', e);
-        }
+        } catch (e) { console.error('❌ Error consulting fines:', e); }
       }
       setInterval(checkForFines, 5000);
 
