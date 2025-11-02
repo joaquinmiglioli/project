@@ -2,20 +2,22 @@ package com.example.demo.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import devices.DeviceStatus;
+import devices.TrafficLightStatus;
 
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
-
  * Carga devices iniciales desde devices.json (Path o InputStream).
- * Versión robusta: admite varias variantes del JSON (keys "deviceId" o "id",
- * "speedLimit" o "limit", "toleranceSec" o "toleranceTime", etc.)
+ * Soporta tu estructura actual con:
+ *  - "semaphoreControllers" (con semA/semB, main, status, lat/lng)
+ *  - "radars", "parkingCameras", "securityCameras"
+ * También setea tlStates y principalIsA para semáforos.
  */
 public final class BootstrapLoader {
-    private BootstrapLoader() {
-    }
+    private BootstrapLoader() {}
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -37,23 +39,83 @@ public final class BootstrapLoader {
         }
     }
 
+    // =====================================================================================
+    // Núcleo: leer cada sección del JSON y poblar CentralState
+    // =====================================================================================
     private static void populateFromRoot(JsonNode root, CentralState state) {
         if (root == null || !root.isObject()) {
             throw new RuntimeException("devices.json no es un objeto JSON válido");
         }
 
-        // ---- radars ----
+        // ---------------------------- SEMÁFOROS ----------------------------
+        // Tu JSON usa "semaphoreControllers" con estructura:
+        // { id, lat, lng, status, semA{status, main, ...}, semB{status, ...} }
+        if (root.has("semaphoreControllers") && root.get("semaphoreControllers").isArray()) {
+            for (var n : root.withArray("semaphoreControllers")) {
+                try {
+                    String id   = textOr(n, "id", "deviceId");
+                    if (id == null) {
+                        System.err.println("TrafficLight sin id (se ignora): " + n);
+                        continue;
+                    }
+                    String addr = textOr(n, "address", "addr", "location");
+                    if (addr == null) addr = "SIN DIRECCIÓN";
+
+                    // principalIsA desde semA.main (default true si no viene)
+                    boolean principalIsA = booleanOr(n.path("semA"), "main", true);
+
+                    // Snapshot base
+                    CentralState.DeviceSnapshot snap = CentralState.DeviceSnapshot.trafficLight(id, addr, principalIsA);
+                    snap.lat = doubleOr(n, "lat", "latitude", "y");
+                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
+                    // DeviceStatus: si el objeto semáforo trae "status": "ERROR" => FAILURE
+                    snap.status = mapDeviceStatus(textOr(n, "status"));
+
+                    state.devicesById.put(id, snap);
+
+                    // Estado de luces A/B desde semA.status y semB.status
+                    TrafficLightStatus a = mapLight(textOr(n.path("semA"), "status"));
+                    TrafficLightStatus b = mapLight(textOr(n.path("semB"), "status"));
+
+                    // Si no vienen, por defecto A=GREEN B=RED (o lo que prefieras)
+                    if (a == null) a = TrafficLightStatus.GREEN;
+                    if (b == null) b = TrafficLightStatus.RED;
+
+                    // Guardar TLState y modo
+                    state.tlMode.put(id, snap.status == DeviceStatus.FAILURE
+                            ? CentralState.TLMode.FLASHING
+                            : CentralState.TLMode.NORMAL);
+
+                    // Si principalIsA=false, igual guardamos A/B tal cual;
+                    // el servicio de ciclo invierte visualmente según principalIsA cuando corresponda.
+                    state.tlStates.put(id, new CentralState.TLState(a, b, principalIsA));
+
+                } catch (Exception e) {
+                    System.err.println("Warning: no pude parsear un semaphoreController: " + e.getMessage());
+                }
+            }
+        }
+
+        // ---------------------------- RADARES ----------------------------
         if (root.has("radars") && root.get("radars").isArray()) {
             for (var n : root.withArray("radars")) {
                 try {
-                    String id = textOr(n, "deviceId", "id");
+                    String id   = textOr(n, "id", "deviceId");
                     if (id == null) {
                         System.err.println("Radar sin id (se ignora): " + n);
                         continue;
                     }
-                    String addr = textOr(n, "address", "addr", "location", null);
-                    int limit = intOr(n, "speedLimit", "limit", 60);
-                    state.devicesById.put(id, CentralState.DeviceSnapshot.radar(id, addr == null ? "SIN DIRECCIÓN" : addr, limit));
+                    String addr = textOr(n, "address", "addr", "location");
+                    if (addr == null) addr = "SIN DIRECCIÓN";
+
+                    int limit = intOr(n, "speedLimit", "limit", 60); // default 60 si no viene
+                    CentralState.DeviceSnapshot snap =
+                            CentralState.DeviceSnapshot.radar(id, addr, limit);
+                    snap.lat = doubleOr(n, "lat", "latitude", "y");
+                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
+                    snap.status = mapDeviceStatus(textOr(n, "status"));
+
+                    state.devicesById.put(id, snap);
                     state.radarLimit.put(id, limit);
                 } catch (Exception e) {
                     System.err.println("Warning: no pude parsear un radar: " + e.getMessage());
@@ -61,18 +123,26 @@ public final class BootstrapLoader {
             }
         }
 
-        // ---- parking cameras ----
+        // ---------------------------- CÁMARAS DE ESTACIONAMIENTO ----------------------------
         if (root.has("parkingCameras") && root.get("parkingCameras").isArray()) {
             for (var n : root.withArray("parkingCameras")) {
                 try {
-                    String id = textOr(n, "deviceId", "id");
+                    String id   = textOr(n, "id", "deviceId");
                     if (id == null) {
                         System.err.println("ParkingCamera sin id (se ignora): " + n);
                         continue;
                     }
-                    String addr = textOr(n, null, "address", "addr", "location");
-                    int tol = intOr(n, "toleranceSec", "toleranceTime", 120);
-                    state.devicesById.put(id, CentralState.DeviceSnapshot.parking(id, addr == null ? "SIN DIRECCIÓN" : addr, tol));
+                    String addr = textOr(n, "address", "addr", "location");
+                    if (addr == null) addr = "SIN DIRECCIÓN";
+
+                    int tol = intOr(n, "toleranceSec", "toleranceTime", 120); // tomamos toleranceTime si viene
+                    CentralState.DeviceSnapshot snap =
+                            CentralState.DeviceSnapshot.parking(id, addr, tol);
+                    snap.lat = doubleOr(n, "lat", "latitude", "y");
+                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
+                    snap.status = mapDeviceStatus(textOr(n, "status"));
+
+                    state.devicesById.put(id, snap);
                     state.parkingToleranceSec.put(id, tol);
                 } catch (Exception e) {
                     System.err.println("Warning: no pude parsear una parkingCamera: " + e.getMessage());
@@ -80,84 +150,93 @@ public final class BootstrapLoader {
             }
         }
 
-        // ---- traffic lights / semaphoreControllers ----
-        // tu JSON puede llamarlo "trafficLights" o "semaphoreControllers"
-        String tlArrayName = root.has("trafficLights") ? "trafficLights" : (root.has("semaphoreControllers") ? "semaphoreControllers" : null);
-        if (tlArrayName != null && root.get(tlArrayName).isArray()) {
-            for (var n : root.withArray(tlArrayName)) {
-                try {
-                    String id = textOr(n, "deviceId", "id");
-                    if (id == null) {
-                        System.err.println("TrafficLight/semáforo sin id (se ignora): " + n);
-                        continue;
-                    }
-                    String addr = textOr(n, "address", "addr", null);
-                    boolean principalIsA = booleanOr(n, "principalIsA", true);
-                    state.devicesById.put(id, CentralState.DeviceSnapshot.trafficLight(id, addr == null ? "SIN DIRECCIÓN" : addr, principalIsA));
-                    state.tlMode.put(id, CentralState.TLMode.NORMAL);
-                    state.tlStates.put(id, new CentralState.TLState(
-                            Devices.TrafficLightStatus.GREEN,
-                            Devices.TrafficLightStatus.RED,
-                            principalIsA
-                    ));
-                } catch (Exception e) {
-                    System.err.println("Warning: no pude parsear un trafficLight/semaphoreController: " + e.getMessage());
-                }
-            }
-        }
-
-        // ---- security cameras ----
+        // ---------------------------- CÁMARAS DE SEGURIDAD ----------------------------
         if (root.has("securityCameras") && root.get("securityCameras").isArray()) {
             for (var n : root.withArray("securityCameras")) {
                 try {
-                    String id = textOr(n, "deviceId", "id");
+                    String id   = textOr(n, "id", "deviceId");
                     if (id == null) {
                         System.err.println("SecurityCamera sin id (se ignora): " + n);
                         continue;
                     }
-                    String addr = textOr(n, "address", "addr", null);
-                    state.devicesById.put(id, CentralState.DeviceSnapshot.securityCam(id, addr == null ? "SIN DIRECCIÓN" : addr));
+                    String addr = textOr(n, "address", "addr", "location");
+                    if (addr == null) addr = "SIN DIRECCIÓN";
+
+                    CentralState.DeviceSnapshot snap =
+                            CentralState.DeviceSnapshot.securityCam(id, addr);
+                    snap.lat = doubleOr(n, "lat", "latitude", "y");
+                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
+                    snap.status = mapDeviceStatus(textOr(n, "status"));
+
+                    state.devicesById.put(id, snap);
                 } catch (Exception e) {
                     System.err.println("Warning: no pude parsear una securityCamera: " + e.getMessage());
                 }
             }
         }
-
     }
 
-    // ----- helpers -----
-    private static String textOr(JsonNode n, String defaultVal, String... keys) {
-        if (n == null) return defaultVal;
+    // =====================================================================================
+    // Helpers
+    // =====================================================================================
+
+    private static String textOr(JsonNode n, String... keys) {
+        if (n == null) return null;
         for (String k : keys) {
             if (k != null && n.has(k) && n.get(k) != null && !n.get(k).isNull()) {
                 return n.get(k).asText(null);
             }
         }
-        return defaultVal;
+        return null;
     }
 
-    private static String textOr(JsonNode n, String key1, String key2) {
-        return textOr(n, null, key1, key2);
-    }
-
-    private static int intOr(JsonNode n, String key1, String key2, int defaultVal) {
+    private static int intOr(JsonNode n, String k1, String k2, int def) {
         try {
-            String t = textOr(n, null, key1, key2);
-            if (t == null) return defaultVal;
+            String t = textOr(n, k1, k2);
+            if (t == null) return def;
             return Integer.parseInt(t);
         } catch (Exception e) {
             try {
-                if (n.has(key1) && n.get(key1).canConvertToInt()) return n.get(key1).asInt(defaultVal);
-                if (n.has(key2) && n.get(key2).canConvertToInt()) return n.get(key2).asInt(defaultVal);
-            } catch (Exception ignored) {
-            }
-            return defaultVal;
+                if (n.has(k1) && n.get(k1).canConvertToInt()) return n.get(k1).asInt(def);
+                if (n.has(k2) && n.get(k2).canConvertToInt()) return n.get(k2).asInt(def);
+            } catch (Exception ignored) {}
+            return def;
         }
     }
 
-    private static boolean booleanOr(JsonNode n, String key, boolean defaultVal) {
-        if (n == null) return defaultVal;
-        if (n.has(key) && n.get(key) != null && !n.get(key).isNull()) return n.get(key).asBoolean(defaultVal);
-        return defaultVal;
+    private static boolean booleanOr(JsonNode n, String key, boolean def) {
+        if (n == null) return def;
+        if (n.has(key) && n.get(key) != null && !n.get(key).isNull()) return n.get(key).asBoolean(def);
+        return def;
+    }
+
+    private static Double doubleOr(JsonNode n, String... keys) {
+        if (n == null) return null;
+        for (String k : keys) {
+            if (k != null && n.has(k) && !n.get(k).isNull()) {
+                try { return n.get(k).asDouble(); } catch (Exception ignored) {}
+            }
+        }
+        return null;
+    }
+
+    private static DeviceStatus mapDeviceStatus(String s) {
+        if (s == null) return DeviceStatus.NORMAL;
+        return switch (s.toUpperCase()) {
+            case "READY", "NORMAL", "OK", "GREEN" -> DeviceStatus.NORMAL;
+            case "ERROR", "FAIL", "FAILURE", "DOWN", "RED" -> DeviceStatus.FAILURE;
+            case "INTERMITTENT", "WARN", "YELLOW" -> DeviceStatus.INTERMITTENT;
+            default -> DeviceStatus.NORMAL;
+        };
+    }
+
+    private static TrafficLightStatus mapLight(String s) {
+        if (s == null) return null;
+        return switch (s.toUpperCase()) {
+            case "RED"    -> TrafficLightStatus.RED;
+            case "YELLOW" -> TrafficLightStatus.YELLOW;
+            case "GREEN"  -> TrafficLightStatus.GREEN;
+            default       -> null;
+        };
     }
 }

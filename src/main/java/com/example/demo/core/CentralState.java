@@ -1,7 +1,7 @@
 package com.example.demo.core;
 
-import Devices.DeviceStatus;
-import Devices.TrafficLightStatus;
+import devices.DeviceStatus;
+import devices.TrafficLightStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -46,6 +46,8 @@ import java.util.*;
     }
 
     public static class DeviceSnapshot implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         public String deviceId;
         public String type;
         public String address;
@@ -55,41 +57,30 @@ import java.util.*;
         public Integer toleranceSec;
         public Boolean principalIsA;
 
-        public DeviceSnapshot() {
-        }
+        // ⬇⬇⬇ NUEVO: coordenadas para pintar en el mapa
+        public Double lat;
+        public Double lng;
+
+        public DeviceSnapshot() {}
 
         public static DeviceSnapshot radar(String id, String addr, int limit) {
             var d = new DeviceSnapshot();
-            d.deviceId = id;
-            d.type = "Radar";
-            d.address = addr;
-            d.speedLimit = limit;
+            d.deviceId = id; d.type = "Radar"; d.address = addr; d.speedLimit = limit;
             return d;
         }
-
         public static DeviceSnapshot parking(String id, String addr, int tol) {
             var d = new DeviceSnapshot();
-            d.deviceId = id;
-            d.type = "ParkingCamera";
-            d.address = addr;
-            d.toleranceSec = tol;
+            d.deviceId = id; d.type = "ParkingCamera"; d.address = addr; d.toleranceSec = tol;
             return d;
         }
-
         public static DeviceSnapshot trafficLight(String id, String addr, boolean principalIsA) {
             var d = new DeviceSnapshot();
-            d.deviceId = id;
-            d.type = "TrafficLight";
-            d.address = addr;
-            d.principalIsA = principalIsA;
+            d.deviceId = id; d.type = "TrafficLight"; d.address = addr; d.principalIsA = principalIsA;
             return d;
         }
-
         public static DeviceSnapshot securityCam(String id, String addr) {
             var d = new DeviceSnapshot();
-            d.deviceId = id;
-            d.type = "SecurityCamera";
-            d.address = addr;
+            d.deviceId = id; d.type = "SecurityCamera"; d.address = addr;
             return d;
         }
     }

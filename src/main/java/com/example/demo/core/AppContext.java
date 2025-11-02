@@ -1,91 +1,91 @@
 package com.example.demo.core;
 
-import com.example.demo.services.*;
+import com.example.demo.runtime.DeviceCatalog;
+import com.example.demo.runtime.DeviceFactory;
+import com.example.demo.runtime.SnapshotSync;
+
+import com.example.demo.services.TrafficLightCycleService;
+import com.example.demo.services.ViolationService;
+import com.example.demo.core.ViolationSimulator;
+
+import cars.CarService;
+import fines.FineIssuer;
+import fines.SimpleFineIssuer;
+
+import db.CarDAO;
+import db.FineDAO;
+
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
-/** Contenedor de servicios + estado compartido, para inyectar en el Controller. */
 public final class AppContext {
-    public final CentralState state;
+
+    // ===== Persistencia de estado (sin cambios) =====
     public final StatePersistenceService persistence;
+    public final CentralState state;
 
+    // ===== Runtime de dispositivos =====
+    public final DeviceCatalog deviceCatalog;
+    public final SnapshotSync  snapshotSync;
+
+    // ===== Dominio AUTOS & MULTAS (DB) =====
+    public final CarService carService;
+    public final FineDAO fineDAO;
+    public final FineIssuer fineIssuer;
+
+    // ===== Violaciones y Semáforos =====
     public final ViolationService violationService;
-    public final FineTypeService  fineTypeService;
-    public final VehicleService   vehicleService;
-    public final DeviceRegistry   deviceRegistry;
-    public final FineEmissionService fineEmissionService;
-
-    // servicio de ciclo de semáforos
     public final TrafficLightCycleService trafficLightCycleService;
 
+    public final ViolationCoordinator violationCoordinator;
+
+    public final ViolationSimulator violationSimulator;
+
     public AppContext() {
-        // ====== Cargar estado y persistencia ======
+        // 1) Estado
         this.persistence = new StatePersistenceService(Path.of("state.bin"));
-        this.state = persistence.loadOrBootstrap(Path.of("src/main/resources/devices.json"));
+        this.state       = persistence.loadOrBootstrap(Path.of("src/main/resources/devices.json"));
 
-        // ====== Inicialización de servicios ======
-        this.violationService = ViolationService.fromSeed(state.violations);
-        this.fineTypeService  = new FineTypeService();
-        this.vehicleService   = new VehicleService();
-        this.deviceRegistry   = new DeviceRegistry();
-        this.fineEmissionService = new FineEmissionService(
-                violationService, deviceRegistry, vehicleService, fineTypeService
-        );
+        // 2) Objetos de dispositivos desde snapshot
+        this.deviceCatalog = DeviceFactory.buildFrom(state.devicesById);
+        this.snapshotSync  = new SnapshotSync(state);
 
-        // ====== Inicialización de ciclo de semáforos ======
+        // 3) Servicios de dominio (DB)
+        var carDAO       = new CarDAO();
+        this.carService  = new CarService(carDAO);
+        this.fineDAO     = new FineDAO();
+        this.fineIssuer  = new SimpleFineIssuer(carService, fineDAO);
+
+        // 4) Violaciones + ciclo semáforos
+        this.violationService         = ViolationService.fromSeed(state.violations);
         this.trafficLightCycleService = new TrafficLightCycleService(state);
 
-        // Listener que emite PDF automáticamente
-        this.fineEmissionService.start();
-        // Iniciar simulación de multas (velocidad, parking, semáforo en rojo)
-        this.fineEmissionService.startSimulation();
-
-        // ====== Iniciar el ciclo en todos los semáforos cargados ======
-        if (!state.tlStates.isEmpty()) {
-            // Separar semáforos por calle principal para crear una "onda verde" por cada una.
-            // Nota: esta agrupación se basa en la configuración de `devices.json`.
-            List<String> independenciaIds = new ArrayList<>();
-            for (int i = 1; i <= 27; i++) { independenciaIds.add("Semaphore " + i); }
-
-            List<String> rivadaviaIds = new ArrayList<>();
-            for (int i = 28; i <= 31; i++) { rivadaviaIds.add("Semaphore " + i); }
-
-            // Filtrar y ordenar los IDs que realmente existen en el estado actual
-            independenciaIds = independenciaIds.stream().filter(state.tlStates::containsKey).collect(Collectors.toList());
-            rivadaviaIds = rivadaviaIds.stream().filter(state.tlStates::containsKey).collect(Collectors.toList());
-
-            // Iniciar cascada para cada calle
-            if (!independenciaIds.isEmpty()) {
-                this.trafficLightCycleService.startCascade(independenciaIds, 5); // 5s de separación
-                System.out.println("✅ Independencia cascade started.");
-            }
-            if (!rivadaviaIds.isEmpty()) {
-                this.trafficLightCycleService.startCascade(rivadaviaIds, 5); // 5s de separación
-                System.out.println("✅ Rivadavia cascade started.");
-            }
-
-            System.out.println("✅ All semaphore cascade cycles started succesfully.");
-
-        } else {
-            System.out.println("⚠️ No semaphores were found to start a cycle.");
-        }
-    }
-
-    /** Llamar al cerrar la app. */
-    public void saveOnExit() {
-        // Detener simulación de multas
-        this.fineEmissionService.stopSimulation();
-
-        // ✅ Detener ciclos de semáforos para evitar hilos vivos al cerrar
+        // 1) Apago cualquier ciclo previo (defensivo)
         this.trafficLightCycleService.stopAll();
 
-        // Actualizar lista de infracciones antes de persistir
-        state.violations = violationService.exportAll();
+        // 2) Grupo Independencia: Semáforos 1..27
+        java.util.List<String> indep = java.util.stream.IntStream.rangeClosed(1, 27)
+                .mapToObj(i -> "Semaphore " + i)
+                .toList();
 
-        // Guardar estado
+        // 3) Grupo Rivadavia: Semáforos 28..31
+        java.util.List<String> riv = java.util.stream.IntStream.rangeClosed(28, 31)
+                .mapToObj(i -> "Semaphore " + i)
+                .toList();
+        // 4) // Ambos grupos comienzan en ROJO y lanzan onda con offset de 1s
+        trafficLightCycleService.startCascade("Independencia", indep, 2);
+        trafficLightCycleService.startCascade("Rivadavia", riv, 2);
+
+        this.violationSimulator = new ViolationSimulator(state, violationService);
+        this.violationSimulator.start();
+
+        // 5) Coordinador violaciones → multas (comienza a escuchar)
+        this.violationCoordinator = new ViolationCoordinator(violationService, fineIssuer);
+        this.violationCoordinator.start();
+    }
+
+    public void saveOnExit() {
+        this.trafficLightCycleService.stopAll();
+        state.violations = violationService.exportAll();
         persistence.save(state);
     }
 }
