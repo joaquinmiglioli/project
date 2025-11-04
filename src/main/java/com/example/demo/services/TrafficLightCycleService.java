@@ -30,7 +30,6 @@ public class TrafficLightCycleService {
     private static final long T3 = T2 + AR_MS;          // BOTH_RED_1 → B_VERDE
     private static final long T4 = T3 + B_MS;           // B_VERDE → B_AMBAR
     private static final long T5 = T4 + Y_MS;           // B_AMBAR → BOTH_RED_2
-    // T6 = CYCLE_MS → vuelve a 0
 
     private final CentralState state;
 
@@ -44,6 +43,9 @@ public class TrafficLightCycleService {
 
     /** idGrupo → runner programado */
     private final Map<String, GroupRunner> groups = new ConcurrentHashMap<>();
+
+    /** ids de semáforos pausados (por falla, etc.) */
+    private final Set<String> paused = ConcurrentHashMap.newKeySet();
 
     public TrafficLightCycleService(CentralState state) {
         this.state = Objects.requireNonNull(state, "state");
@@ -61,13 +63,19 @@ public class TrafficLightCycleService {
         Optional.ofNullable(groups.remove(name)).ifPresent(GroupRunner::stop);
     }
 
+    /** Pausa un semáforo específico (no avanza su fase en la cascada). */
+    public void stopOne(String semaphoreId) {
+        paused.add(semaphoreId);
+    }
+
+    /** Reanuda un semáforo específico (vuelve a avanzar en la cascada). */
+    public void resumeOne(String semaphoreId) {
+        paused.remove(semaphoreId);
+    }
+
     /**
      * Inicia una cascada con reloj ABSOLUTO compartido y offset de {@code stepSec} entre ids.
      * Todos los ids del grupo se fuerzan a ROJO inmediatamente.
-     *
-     * @param name       nombre lógico del grupo (ej: "Independencia")
-     * @param orderedIds ids en orden de onda (primero arranca primero)
-     * @param stepSec    separación entre comienzos (sugerido: 1)
      */
     public synchronized void startCascade(String name, List<String> orderedIds, int stepSec) {
         stopGroup(name);
@@ -126,6 +134,10 @@ public class TrafficLightCycleService {
                 long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
                 for (int i = 0; i < ids.size(); i++) {
                     String id = ids.get(i);
+
+                    // 👇 Si está pausado (por falla), NO avanzamos su fase
+                    if (paused.contains(id)) continue;
+
                     var st = state.tlStates.get(id);
                     if (st == null) continue;
 
