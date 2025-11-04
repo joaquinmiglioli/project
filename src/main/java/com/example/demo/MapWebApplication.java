@@ -16,6 +16,11 @@ public class MapWebApplication {
     private static AppContext ctx;
 
     public static void main(String[] args) {
+
+        // Esto inicializa el Toolkit de JavaFX "en modo headless"
+        // para que Spring Boot pueda usar clases como ObservableList.
+        new javafx.embed.swing.JFXPanel();
+
         SpringApplication.run(MapWebApplication.class, args);
         System.out.println("➡ Server on http://localhost:8080");
     }
