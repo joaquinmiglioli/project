@@ -73,7 +73,8 @@ public class DeviceController {
                         "id", s.deviceId,
                         "lat", s.lat,
                         "lng", s.lng,
-                        "status", uiStatus(s.status)
+                        "status", uiStatus(s.status),
+                        "address", s.address // 👈 agregado
                 ))
                 .collect(Collectors.toList());
         out.put("cameras", cams);
@@ -155,4 +156,5 @@ public class DeviceController {
             default           -> "READY";
         };
     }
+
 }

@@ -25,5 +25,5 @@ public abstract class Device implements Serializable {
     // ==== mantenimiento genérico (podés overridear en subclases si querés efectos extra) ====
     public void fail()        { setStatus(DeviceStatus.FAILURE); }
     public void repair()      { setStatus(DeviceStatus.NORMAL); }
-    public void intermittent(){ setStatus(DeviceStatus.INTERMITTENT); }
+    public void intermittent() { setStatus(DeviceStatus.INTERMITTENT); }
 }

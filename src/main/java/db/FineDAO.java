@@ -78,11 +78,24 @@ public class FineDAO {
         return out;
     }
 
-    /** Borra todo el historial de multas. */
+    /** Borra todo y reinicia el autonumérico a 1, compatible con SERIAL o IDENTITY. */
     public void deleteAll() throws SQLException {
         try (Connection conn = DBConnection.getConnection();
              Statement st = conn.createStatement()) {
+
+            conn.setAutoCommit(false);
+
             st.executeUpdate("DELETE FROM fines");
+
+            // 1) Intento para columnas SERIAL (usa la secuencia asociada a fines.fineid)
+            try {
+                st.execute("SELECT setval(pg_get_serial_sequence('fines','fineid'), 1, false)");
+            } catch (SQLException e) {
+                // 2) Si no hay secuencia (columna es IDENTITY), reinicio el contador IDENTITY
+                st.execute("ALTER TABLE fines ALTER COLUMN fineid RESTART WITH 1");
+            }
+
+            conn.commit();
         }
     }
 

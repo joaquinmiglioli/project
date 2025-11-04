@@ -29,4 +29,5 @@ public class TrafficLight {
                 ", principal=" + principal +
                 ", status=" + status;
     }
+
 }
