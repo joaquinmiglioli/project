@@ -251,14 +251,12 @@
       /* ============ Drawer (Logs / Eventos / Multas) ============ */
       const drawer=document.getElementById('drawer'), drawerTitle=document.getElementById('drawerTitle'), drawerContent=document.getElementById('drawerContent'), drawerClose=document.getElementById('drawerClose');
 
-      // ✅ 2. AQUÍ SE AGREGA 'tabSettings'
       const tabLogs=document.getElementById('tabLogs'), tabEvents=document.getElementById('tabEvents'), tabFines=document.getElementById('tabFines'), tabSettings=document.getElementById('tabSettings');
 
       function openDrawer(title){ drawerTitle.textContent=title; drawer.style.display='block'; drawer.setAttribute('aria-hidden','false'); }
       function closeDrawer(){ drawer.style.display='none'; drawer.setAttribute('aria-hidden','true'); }
       drawerClose.onclick=closeDrawer;
 
-      // ✅ 3. AQUÍ SE AGREGA 'tabSettings' A LA FUNCIÓN
       function selectTab(btn){ [tabLogs,tabEvents,tabFines,tabSettings].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
 
       function fmtTs(ts){ try{ return new Date(ts).toLocaleString(); }catch{ return ts; } }
@@ -356,7 +354,6 @@
         }
       }
 
-      // ✅ 4. ESTA ES LA FUNCIÓN NUEVA PARA RENDERIZAR EL PANEL DE SETTINGS
       function renderSettings(){
         const html = `
           <div style="border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
@@ -371,7 +368,6 @@
         `;
         drawerContent.innerHTML = html;
 
-        // Adjuntar el evento al botón
         document.getElementById('btnResetApp').onclick = async () => {
           if (!confirm('ARE YOU SURE?\n\nThis will delete all saved data. The application server must be manually restarted afterward.')) {
             return;
@@ -381,8 +377,8 @@
             const res = await r.json();
             if (!r.ok || res.ok === false) throw new Error(res.message);
 
-            // Mostrar alerta para que el usuario sepa que debe reiniciar el servidor
-            alert('SUCCESS: 'Write-up' + res.message);
+            // ✅ ESTA ES LA LÍNEA CORREGIDA (sin el 'Write-up')
+            alert('SUCCESS: ' + res.message);
             closeDrawer();
           } catch (e) {
             alert('ERROR: Could not reset state.\n' + e.message);
@@ -395,7 +391,6 @@
       tabEvents.onclick=()=>{ selectTab(tabEvents); openDrawer('Events'); loadEvents(); };
       tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('Fines'); loadFines(); };
 
-      // ✅ 5. ESTA ES LA LÍNEA NUEVA QUE MANEJA EL CLICK EN 'tabSettings'
       tabSettings.onclick = ()=>{ selectTab(tabSettings); openDrawer('Settings'); renderSettings(); };
 
     }); // DOMContentLoaded
