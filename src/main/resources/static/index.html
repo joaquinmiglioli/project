@@ -77,7 +77,7 @@
     <div class="brand">City Monitor</div>
     <button id="tabLogs" class="tab" aria-selected="false">Logs</button>
     <button id="tabEvents" class="tab" aria-selected="false">Events</button>
-    <button id="tabFines" class="tab" aria-selected="false">Fines</button>
+    <button id="tabFines" class="tab" aria-selected="false">fines</button>
 
     <button id="tabSettings" class="tab" aria-selected="false" style="margin-left:12px;">Settings</button>
 
@@ -327,7 +327,7 @@
           const html = `
             <div class="row" style="margin-bottom:10px">
               <span class="pill">Security Cam Notifications: ${warnings.length}</span>
-              <span class="pill">Fines: ${fines.length}</span>
+              <span class="pill">fines: ${fines.length}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:14px">
               <div><h4>🔔 Security Cam Notifications</h4>${warnings.length? '' : '<div class="pill">No registers</div>'}</div>
@@ -337,7 +337,7 @@
                   <div style="font-size:12px; color:#6b7280">${fmtTs(it.timestamp)}</div>
                   ${it.note?`<div style="margin-top:6px">${it.note}</div>`:''}
                 </div>`).join('')}
-              <div><h4 style="margin-top:8px">🧾 Fines</h4>${fines.length? '' : '<div class="pill">No fines found</div>'}</div>
+              <div><h4 style="margin-top:8px">🧾 fines</h4>${fines.length? '' : '<div class="pill">No fines found</div>'}</div>
               ${fines.map(f=>`
                 <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
                   <div><b>#${f.fineNumber ?? f.id ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
@@ -389,7 +389,7 @@
       // Tabs
       tabLogs.onclick = ()=>{ selectTab(tabLogs); openDrawer('Logs'); loadLogs(); };
       tabEvents.onclick=()=>{ selectTab(tabEvents); openDrawer('Events'); loadEvents(); };
-      tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('Fines'); loadFines(); };
+      tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('fines'); loadFines(); };
 
       tabSettings.onclick = ()=>{ selectTab(tabSettings); openDrawer('Settings'); renderSettings(); };
 
