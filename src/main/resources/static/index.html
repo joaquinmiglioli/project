@@ -411,16 +411,57 @@
           await loadDevices();
         }catch(e){console.error(e);}
       }
+
+      // ✅ --- NUEVA FUNCIÓN ---
+      // Llama al endpoint de MODO INTERMITENTE que creamos en el DeviceController
+      async function setIntermittentDevice(id){
+        try{
+          let res = await fetch(`/api/devices/${encodeURIComponent(id)}/intermittent`);
+          if(!res.ok) res = await fetch(`/api/devices/${encodeURIComponent(id)}/status?action=INTERMITTENT`, {method:'POST'});
+          await loadDevices(); // Recargar todo para que se vea el cambio
+        }catch(e){console.error(e);}
+      }
+
       function repairBtn(item){
         const st = String(item.status||'').toUpperCase();
         if (['ERROR','YELLOW','INTERMITTENT','FAILURE'].includes(st)){
           // ✅ TRADUCIDO
+          // Este es el botón genérico para RADARES y CÁMARAS
           return `<div style="margin-top:8px;text-align:right"><button class="btn btn-ghost btn-rep" data-id="${item.id}">Repair</button></div>`;
         }
         return '';
       }
-      function attachRepair(ev, id){
-        const b = ev.popup.getElement().querySelector('.btn-rep'); if(b) b.addEventListener('click',()=>repairDevice(id));
+
+      // ✅ --- NUEVA FUNCIÓN ---
+      // Botones específicos para SEMÁFOROS, como pediste.
+      function semaphoreRepairBtns(item){
+        const st = String(item.status||'').toUpperCase();
+        if (['ERROR','YELLOW','INTERMITTENT','FAILURE'].includes(st)){
+          // TRADUCIDO
+          return `<div style="margin-top:8px;text-align:right; display:flex; gap:6px;">
+                    <button class="btn btn-ghost btn-rep-normal" data-id="${item.id}" style="flex:1;">Repair (Normal)</button>
+                    <button class="btn btn-rep-interm" data-id="${item.id}" style="flex:1;">Set Intermittent</button>
+                  </div>`;
+        }
+        return '';
+      }
+
+      // ✅ --- FUNCIÓN MODIFICADA ---
+      // Renombramos 'attachRepair' a 'attachRepairHandlers' para manejar los 3 tipos de botones
+      function attachRepairHandlers(ev, id){
+        const popup = ev.popup.getElement();
+
+        // 1. Botón de reparación genérico (para Radar, Cámaras)
+        const b_rep = popup.querySelector('.btn-rep');
+        if(b_rep) b_rep.addEventListener('click',()=>repairDevice(id));
+
+        // 2. Botones de Semáforo (Repair Normal)
+        const b_norm = popup.querySelector('.btn-rep-normal');
+        if(b_norm) b_norm.addEventListener('click',()=>repairDevice(id));
+
+        // 3. Botones de Semáforo (Set Intermittent)
+        const b_int = popup.querySelector('.btn-rep-interm');
+        if(b_int) b_int.addEventListener('click',()=>setIntermittentDevice(id));
       }
 
       function addDevices(data){
@@ -432,7 +473,10 @@
           const ic=isErr(r.status)?ICONS.radar.err:ICONS.radar.ok;
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
-          m.on('popupopen',ev=>attachRepair(ev,r.id));
+
+          // ✅ CAMBIO: Usar el nuevo handler
+          m.on('popupopen',ev=>attachRepairHandlers(ev,r.id));
+
           (isErr(r.status) ? groups.radars_fail : groups.radars).addLayer(m);
           deviceLayers.set(r.id,m); ftrs.push(m);
         });
@@ -440,7 +484,10 @@
           const ic=isErr(p.status)?ICONS.parking.err:ICONS.parking.ok;
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
-          m.on('popupopen',ev=>attachRepair(ev,p.id));
+
+          // ✅ CAMBIO: Usar el nuevo handler
+          m.on('popupopen',ev=>attachRepairHandlers(ev,p.id));
+
           (isErr(p.status) ? groups.parking_fail : groups.parking).addLayer(m);
           deviceLayers.set(p.id,m); ftrs.push(m);
         });
@@ -448,7 +495,10 @@
           const ic=isErr(c.status)?ICONS.camera.err:ICONS.camera.ok;
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
-          m.on('popupopen',ev=>attachRepair(ev,c.id));
+
+          // ✅ CAMBIO: Usar el nuevo handler
+          m.on('popupopen',ev=>attachRepairHandlers(ev,c.id));
+
           if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); }
           (isErr(c.status) ? groups.security_fail : groups.security).addLayer(m);
           deviceLayers.set(c.id,m); ftrs.push(m);
@@ -464,9 +514,14 @@
             weight:1,
             fillColor: markerColor,
             deviceStatus: s.status
-          }).bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+repairBtn(s)));
+          })
 
-          cm.on('popupopen',ev=>attachRepair(ev,s.id));
+          // ✅ CAMBIO: Usar la nueva función de botones 'semaphoreRepairBtns'
+          .bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+semaphoreRepairBtns(s)));
+
+          // ✅ CAMBIO: Usar el nuevo handler
+          cm.on('popupopen',ev=>attachRepairHandlers(ev,s.id));
+
           (isErr(s.status) ? groups.semaphores_fail : groups.semaphores).addLayer(cm);
           deviceLayers.set(s.id,cm); ftrs.push(cm);
         });
@@ -484,8 +539,15 @@
         }
         if(m && m.getPopup()) {
             const currentStatus = m.options.deviceStatus || 'READY';
+
+            // ✅ CAMBIO: Determinar qué botones mostrar según el estado
+            const item = {id, status:currentStatus};
+            const buttons = (isErr(currentStatus) || currentStatus === 'YELLOW')
+                              ? semaphoreRepairBtns(item)
+                              : repairBtn(item); // <- (que devolverá '')
+
             // ✅ TRADUCIDO (textos del popup)
-            m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?')+repairBtn({id, status:currentStatus})));
+            m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?') + buttons));
         }
       };
       async function updateTrafficLights(){ try{ const r=await fetch('/api/trafficlights'); if(!r.ok) throw 0; (await r.json()).forEach(tl=>window.updateSemaphoreStatus(tl.id, tl.a, tl.b)); }catch(e){} }

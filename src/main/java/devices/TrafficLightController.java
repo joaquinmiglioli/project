@@ -28,7 +28,42 @@ public class TrafficLightController extends Device implements Runnable {
         return "Principal=" + principalTrafficLight + " | Secondary=" + secondaryTrafficLight;
     }
 
-    // Si quisieras efectos extra al fallar/reparar (ej, avisar a CentralState), podés overridear:
-    // @Override public void fail()   { super.fail();   /* hook extra */ }
-    // @Override public void repair() { super.repair(); /* hook extra */ }
+    // --- ✅ INICIO: POLIMORFISMO DE MANTENIMIENTO ---
+
+    /**
+     * Al fallar, (polimorfismo) además de setear el estado,
+     * le pedimos al contexto (AppContext) que pause el ciclo de cascada.
+     */
+    @Override
+    public void fail(IMaintenanceContext context) {
+        super.fail(context); // Llama a Device.java -> setStatus(FAILURE)
+        if (context != null) {
+            context.pauseTrafficLight(getDeviceId());
+        }
+    }
+
+    /**
+     * Al reparar, (polimorfismo) además de setear el estado,
+     * le pedimos al contexto (AppContext) que reanude el ciclo de cascada.
+     */
+    @Override
+    public void repair(IMaintenanceContext context) {
+        super.repair(context); // Llama a Device.java -> setStatus(NORMAL)
+        if (context != null) {
+            context.resumeTrafficLight(getDeviceId());
+        }
+    }
+
+    /**
+     * Al pasar a intermitente, (polimorfismo) además de setear el estado,
+     * le pedimos al contexto (AppContext) que pause el ciclo de cascada.
+     */
+    @Override
+    public void intermittent(IMaintenanceContext context) {
+        super.intermittent(context); // Llama a Device.java -> setStatus(INTERMITTENT)
+        if (context != null) {
+            context.pauseTrafficLight(getDeviceId());
+        }
+    }
+    // --- ✅ FIN: POLIMORFISMO DE MANTENIMIENTO ---
 }

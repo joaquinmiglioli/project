@@ -14,10 +14,11 @@ import fines.SimpleFineIssuer;
 
 import db.CarDAO;
 import db.FineDAO;
+import devices.IMaintenanceContext; // 👈 NUEVO IMPORT
 
 import java.nio.file.Path;
 
-public final class AppContext {
+public final class AppContext implements IMaintenanceContext { // 👈 IMPLEMENTAR INTERFAZ
 
     // ===== Persistencia de estado (sin cambios) =====
     public final StatePersistenceService persistence;
@@ -98,12 +99,32 @@ public final class AppContext {
         if (!allowSaveOnExit) {
             System.out.println("🛑 Skipping save on exit (Reset requested).");
             this.trafficLightCycleService.stopAll(); // Detenemos los ciclos
+            this.violationSimulator.stop();
             return; // NO GUARDAR
         }
 
         // Si allowSaveOnExit es true, hace lo de siempre:
         this.trafficLightCycleService.stopAll();
+        this.violationSimulator.stop();
         state.violations = violationService.exportAll();
         persistence.save(state);
+    }
+
+    // --- Implementación de IMaintenanceContext ---
+
+    @Override
+    public void pauseTrafficLight(String deviceId) {
+        if (this.trafficLightCycleService != null) {
+            // Delega la llamada al servicio real
+            this.trafficLightCycleService.stopOne(deviceId);
+        }
+    }
+
+    @Override
+    public void resumeTrafficLight(String deviceId) {
+        if (this.trafficLightCycleService != null) {
+            // Delega la llamada al servicio real
+            this.trafficLightCycleService.resumeOne(deviceId);
+        }
     }
 }

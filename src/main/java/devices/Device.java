@@ -22,8 +22,22 @@ public abstract class Device implements Serializable {
     public DeviceStatus getStatus() { return status; }
     public void setStatus(DeviceStatus status) { this.status = status; }
 
-    // ==== mantenimiento genérico (podés overridear en subclases si querés efectos extra) ====
-    public void fail()        { setStatus(DeviceStatus.FAILURE); }
-    public void repair()      { setStatus(DeviceStatus.NORMAL); }
-    public void intermittent() { setStatus(DeviceStatus.INTERMITTENT); }
+    // ==== MANTENIMIENTO (AHORA CON CONTEXTO) ====
+    // El 'context' es (usualmente) null o ignorado por dispositivos simples.
+    // Las subclases (TrafficLightController) sobreescribirán esto.
+
+    /** Pone el dispositivo en estado FAILURE. */
+    public void fail(IMaintenanceContext context) {
+        setStatus(DeviceStatus.FAILURE);
+    }
+
+    /** Pone el dispositivo en estado NORMAL. */
+    public void repair(IMaintenanceContext context) {
+        setStatus(DeviceStatus.NORMAL);
+    }
+
+    /** Pone el dispositivo en estado INTERMITTENT. */
+    public void intermittent(IMaintenanceContext context) {
+        setStatus(DeviceStatus.INTERMITTENT);
+    }
 }

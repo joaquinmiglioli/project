@@ -140,10 +140,13 @@ public class DeviceController {
             throw new ResourceNotFoundException("Device", id);
         }
 
+        // ✅ AHORA PASAMOS EL CONTEXTO (ctx)
+        // El método polimórfico de Device/TrafficLightController se encargará
+        // de actualizar el estado (POJO) Y notificar a los servicios (Ciclo).
         switch (action.toUpperCase()) {
-            case "FAIL"         -> d.fail();
-            case "REPAIR"       -> d.repair();
-            case "INTERMITTENT" -> d.intermittent();
+            case "FAIL"         -> d.fail(ctx);         // 👈 Pasa ctx
+            case "REPAIR"       -> d.repair(ctx);       // 👈 Pasa ctx
+            case "INTERMITTENT" -> d.intermittent(ctx); // 👈 Pasa ctx
             default -> throw new IllegalArgumentException("Unknown action: " + action);
         }
 
