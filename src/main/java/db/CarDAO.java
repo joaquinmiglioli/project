@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo.exceptions.DatabaseOperationException;
+import com.example.demo.exceptions.DuplicateResourceException;
+import java.sql.SQLException;
+
 public class CarDAO {
 
     private final CarBrandDAO brandDAO = new CarBrandDAO();
@@ -86,16 +90,26 @@ public class CarDAO {
             """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            // ... (setear parámetros)
             ps.setLong(1, brandId);
             ps.setLong(2, modelId);
             ps.setString(3, plate);
             ps.setString(4, owner);
             ps.setString(5, address);
             ps.setString(6, colour);
+
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();
                 return rs.getLong(1);
             }
+        } catch (SQLException e) {
+            // Código de error 23505 = 'unique_violation' en PostgreSQL
+            if ("23505".equals(e.getSQLState())) {
+                // ¡Lanzamos nuestra excepción específica!
+                throw new DuplicateResourceException("Car", "plate", plate);
+            }
+            // Para cualquier otro error de SQL, lanzamos la genérica de DB
+            throw new DatabaseOperationException("Error adding car: " + e.getMessage(), e);
         }
     }
 
