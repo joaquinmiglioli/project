@@ -8,6 +8,10 @@ import db.CarDAO;
 import db.CarModelDAO;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.exceptions.DuplicateResourceException;
+import com.example.demo.exceptions.DatabaseOperationException;
+import java.sql.SQLException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +74,6 @@ public class CarManagementController {
             @RequestParam String colour
     ) {
         try {
-            // Usamos el CarDAO para insertar el nuevo vehículo
             long newCarId = carDAO.insert(brandId, modelId, plate, owner, address, colour);
 
             return Map.of(
@@ -79,12 +82,14 @@ public class CarManagementController {
                     "newCarId", newCarId
             );
 
-        } catch (Exception e) {
+        } catch (DuplicateResourceException e) {
+            // ¡Ahora capturamos la excepción específica!
+            // Ya no comparamos strings.
+            return Map.of("ok", false, "message", e.getMessage());
+
+        } catch (DatabaseOperationException | SQLException e) {
+            // Capturamos otros errores de DB
             e.printStackTrace();
-            // Manejo de error específico para patente duplicada (si la DB lo reporta)
-            if (e.getMessage().contains("uq_cars_licenseplate") || e.getMessage().contains("llave duplicada")) {
-                return Map.of("ok", false, "message", "Error: License plate '" + plate + "' already exists.");
-            }
             return Map.of("ok", false, "message", "Error adding car: " + e.getMessage());
         }
     }

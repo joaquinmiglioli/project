@@ -7,6 +7,8 @@ import devices.DeviceStatus;
 import devices.TrafficLightStatus;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.exceptions.ResourceNotFoundException;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,7 +135,10 @@ public class DeviceController {
     // ---------- helpers ----------
     private Map<String, String> applyStatusAction(String id, String action) {
         Device d = ctx.deviceCatalog.get(id);
-        if (d == null) throw new IllegalArgumentException("Device not found: " + id);
+        if (d == null) {
+            // ¡Lanzamos nuestra excepción específica!
+            throw new ResourceNotFoundException("Device", id);
+        }
 
         switch (action.toUpperCase()) {
             case "FAIL"         -> d.fail();
@@ -141,7 +146,7 @@ public class DeviceController {
             case "INTERMITTENT" -> d.intermittent();
             default -> throw new IllegalArgumentException("Unknown action: " + action);
         }
-        // reflejamos al snapshot (front/persistencia)
+
         ctx.snapshotSync.pushToSnapshot(d);
         return Map.of("id", id, "status", d.getStatus().name());
     }
