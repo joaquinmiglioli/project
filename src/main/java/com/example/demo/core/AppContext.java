@@ -40,6 +40,11 @@ public final class AppContext {
 
     public final ViolationSimulator violationSimulator;
 
+    // (transient para que no se guarde en state.bin)
+    // (volatile para que sea visible entre hilos)
+    private transient volatile boolean allowSaveOnExit = true;
+
+
     public AppContext() {
         // 1) Estado
         this.persistence = new StatePersistenceService(Path.of("state.bin"));
@@ -83,7 +88,20 @@ public final class AppContext {
         this.violationCoordinator.start();
     }
 
+    /** Deshabilita el guardado al salir (usado por el Reset) */
+    public void disableSaveOnExit() {
+        this.allowSaveOnExit = false;
+    }
+
     public void saveOnExit() {
+        // Añadimos esta comprobación al inicio
+        if (!allowSaveOnExit) {
+            System.out.println("🛑 Skipping save on exit (Reset requested).");
+            this.trafficLightCycleService.stopAll(); // Detenemos los ciclos
+            return; // NO GUARDAR
+        }
+
+        // Si allowSaveOnExit es true, hace lo de siempre:
         this.trafficLightCycleService.stopAll();
         state.violations = violationService.exportAll();
         persistence.save(state);

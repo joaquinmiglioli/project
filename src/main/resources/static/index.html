@@ -73,16 +73,17 @@
     </style>
 </head>
 <body>
-<!-- Header -->
 <div class="appbar">
     <div class="brand">City Monitor</div>
     <button id="tabLogs" class="tab" aria-selected="false">Logs</button>
     <button id="tabEvents" class="tab" aria-selected="false">Events</button>
     <button id="tabFines" class="tab" aria-selected="false">Fines</button>
+
+    <button id="tabSettings" class="tab" aria-selected="false" style="margin-left:12px;">Settings</button>
+
     <div class="spacer"></div>
 </div>
 
-<!-- Drawer -->
 <div id="drawer" class="drawer" role="dialog" aria-modal="false" aria-hidden="true">
     <header>
         <h3 id="drawerTitle">Panel</h3>
@@ -94,7 +95,6 @@
 
 <div id="map" aria-label="City map"></div>
 
-<!-- Switches -->
 <div class="devices-control">
     <div id="devicesPanel" class="devices-panel" role="group" aria-label="Show devices">
         <div class="devices-title">Show devices</div>
@@ -105,10 +105,8 @@
     </div>
 </div>
 
-<!-- Toasts -->
 <div id="toast-container"></div>
 
-<!-- Overlay Security Cam -->
 <div id="securityOverlay">
     <div id="securityCard">
         <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#1f2937;">
@@ -252,11 +250,14 @@
 
       /* ============ Drawer (Logs / Eventos / Multas) ============ */
       const drawer=document.getElementById('drawer'), drawerTitle=document.getElementById('drawerTitle'), drawerContent=document.getElementById('drawerContent'), drawerClose=document.getElementById('drawerClose');
-      const tabLogs=document.getElementById('tabLogs'), tabEvents=document.getElementById('tabEvents'), tabFines=document.getElementById('tabFines');
+
+      const tabLogs=document.getElementById('tabLogs'), tabEvents=document.getElementById('tabEvents'), tabFines=document.getElementById('tabFines'), tabSettings=document.getElementById('tabSettings');
+
       function openDrawer(title){ drawerTitle.textContent=title; drawer.style.display='block'; drawer.setAttribute('aria-hidden','false'); }
       function closeDrawer(){ drawer.style.display='none'; drawer.setAttribute('aria-hidden','true'); }
       drawerClose.onclick=closeDrawer;
-      function selectTab(btn){ [tabLogs,tabEvents,tabFines].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
+
+      function selectTab(btn){ [tabLogs,tabEvents,tabFines,tabSettings].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
 
       function fmtTs(ts){ try{ return new Date(ts).toLocaleString(); }catch{ return ts; } }
 
@@ -353,10 +354,44 @@
         }
       }
 
+      function renderSettings(){
+        const html = `
+          <div style="border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+            <h4 style="margin:0 0 10px 0;">Reset Application State</h4>
+            <p style="font-size:13px; color:#6b7280; margin:0 0 12px 0;">
+              This will delete all saved data (device statuses, logs) and reload the
+              default configuration from <code>devices.json</code> the next time the
+              application server is started.
+            </p>
+            <button id="btnResetApp" class="btn danger">Reset and Delete Saved State</button>
+          </div>
+        `;
+        drawerContent.innerHTML = html;
+
+        document.getElementById('btnResetApp').onclick = async () => {
+          if (!confirm('ARE YOU SURE?\n\nThis will delete all saved data. The application server must be manually restarted afterward.')) {
+            return;
+          }
+          try {
+            const r = await fetch('/api/system/reset', { method: 'POST' });
+            const res = await r.json();
+            if (!r.ok || res.ok === false) throw new Error(res.message);
+
+            // ✅ ESTA ES LA LÍNEA CORREGIDA (sin el 'Write-up')
+            alert('SUCCESS: ' + res.message);
+            closeDrawer();
+          } catch (e) {
+            alert('ERROR: Could not reset state.\n' + e.message);
+          }
+        };
+      }
+
       // Tabs
       tabLogs.onclick = ()=>{ selectTab(tabLogs); openDrawer('Logs'); loadLogs(); };
       tabEvents.onclick=()=>{ selectTab(tabEvents); openDrawer('Events'); loadEvents(); };
       tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('Fines'); loadFines(); };
+
+      tabSettings.onclick = ()=>{ selectTab(tabSettings); openDrawer('Settings'); renderSettings(); };
 
     }); // DOMContentLoaded
 </script>

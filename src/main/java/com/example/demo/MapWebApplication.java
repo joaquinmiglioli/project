@@ -6,6 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+// ✅ 1. AÑADIR ESTE IMPORT
+import javafx.application.Platform;
+
 /**
  * Clase principal de Spring Boot.
  * Se encarga de levantar el servidor y crear el único AppContext de la app.
@@ -16,6 +19,12 @@ public class MapWebApplication {
     private static AppContext ctx;
 
     public static void main(String[] args) {
+
+        // Esto inicializa el Toolkit de JavaFX "en modo headless"
+        // para que Spring Boot pueda usar clases como ObservableList.
+        //
+        new javafx.embed.swing.JFXPanel();
+
         SpringApplication.run(MapWebApplication.class, args);
         System.out.println("➡ Server on http://localhost:8080");
     }
@@ -36,8 +45,14 @@ public class MapWebApplication {
     public void onExit() {
         if (ctx != null) {
             System.out.println("Saving state and stopping services...");
+            //
             ctx.saveOnExit();
             System.out.println("✅ Status saved. Closing app.");
         }
+
+        // ✅ 2. AÑADIR ESTA LÍNEA AL FINAL
+        // Esto le dice al toolkit de JavaFX (que iniciamos en main)
+        // que también debe cerrarse, permitiendo que el programa termine.
+        Platform.exit();
     }
 }
