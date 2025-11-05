@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.*;
 
 @RestController
-public class TrafficLightController {
+public class TrafficLightApiController { // <-- 1. Nombre de clase cambiado
 
     private final AppContext ctx;
 
-    public TrafficLightController(AppContext ctx) {
+    // 2. Constructor cambiado para coincidir con el nombre de la clase
+    public TrafficLightApiController(AppContext ctx) {
         this.ctx = ctx;
     }
 
