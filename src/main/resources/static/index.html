@@ -26,10 +26,9 @@
         .switch input:checked + .switch-slider::before{transform: translateX(18px);}
         .switch input:focus-visible + .switch-slider{outline:2px solid #2563eb; outline-offset:2px;}
 
-        /* --- ✅ NUEVO ESTILO PARA EL SWITCH DE FALLAS --- */
+        /* --- ESTILO PARA EL SWITCH DE FALLAS --- */
         #chkFails + .switch-slider { background: #fca5a5; } /* Color rojo claro cuando está apagado */
         #chkFails:checked + .switch-slider { background: #b91c1c !important; } /* Color rojo oscuro cuando está encendido */
-        /* --- FIN NUEVO ESTILO --- */
 
         /* Header */
         .appbar{position:absolute; top:0; left:0; right:0; height:64px; background:#111827; color:#fff; z-index:950; display:flex; align-items:center; gap:14px; padding:0 16px; box-shadow: 0 6px 18px rgba(0,0,0,.35);}
@@ -40,12 +39,13 @@
         .spacer{flex:1}
 
         /* Drawer */
-        .drawer{position:absolute; top:64px; left:12px; z-index:920; width: 420px; max-width: calc(100% - 24px); background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; box-shadow: 0 18px 40px rgba(0,0,0,.25); display:none; max-height: calc(100% - 84px); overflow:auto; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
+        .drawer{position:absolute; top:64px; left:12px; z-index:920; width: 420px; max-width: calc(100% - 24px); background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; box-shadow: 0 18px 40px rgba(0,0,0,.25); display:none; max-height: calc(100% - 84px); overflow-y:auto; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
         .drawer header{position:sticky; top:0; background:#f9fafb; border-bottom:1px solid #e5e7eb; padding:10px 12px; display:flex; align-items:center; gap:8px;}
         .drawer header h3{margin:0; font-size:16px;}
         .drawer .content{padding:12px;}
         .row{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
         .btn{border:1px solid #e5e7eb; background:#fff; color:#111827; border-radius:8px; padding:6px 10px; cursor:pointer;}
+        .btn:disabled{background:#f3f4f6; color:#9ca3af; cursor:not-allowed;}
         .btn.ghost{background:#111827; color:#fff; border-color:#111827;}
         .btn.danger{background:#ef4444; color:#fff; border-color:#ef4444;}
         .pill{font-size:12px; background:#f3f4f6; border-radius:999px; padding:4px 8px; border:1px solid #e5e7eb;}
@@ -76,7 +76,7 @@
         .sw-btn{background:#1f2937; color:#fff; border:1px solid #374151; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:700;}
         .sw-btn-ghost{background:transparent; border-color:#374151;}
 
-        /* ✅ --- NUEVOS ESTILOS PARA EL FORMULARIO --- */
+        /* --- ESTILOS PARA EL FORMULARIO --- */
         .form-box{border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-top: 16px;}
         .form-box h4{margin:0 0 10px 0;}
         .form-grid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px 12px;}
@@ -92,7 +92,172 @@
             box-sizing: border-box; /* Asegura que el padding no desborde */
         }
         .form-group.full-width{grid-column: 1 / -1;}
-        /* --- FIN DE NUEVOS ESTILOS --- */
+
+        /* --- ESTILOS PARA PESTAÑAS DE SETTINGS --- */
+        .settings-nav {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 12px;
+            gap: 4px;
+        }
+        .settings-tab {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-bottom: 0;
+            padding: 8px 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: -1px; /* Solapa con el borde inferior */
+        }
+        .settings-tab[aria-selected="true"] {
+            color: #111827;
+            background: #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .settings-panel {
+            display: none; /* Ocultos por defecto */
+        }
+        .settings-panel[data-active="true"] {
+            display: block; /* Visible el activo */
+        }
+
+        /* --- ESTILOS PARA FILTROS Y GRUPOS DE MULTAS --- */
+        .filter-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .filter-select, .filter-input {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            font-size: 13px;
+            font-weight: 600;
+            flex-grow: 1; /* Hace que ocupe el espacio disponible */
+            box-sizing: border-box;
+        }
+        .filter-input {
+            font-weight: normal;
+        }
+
+        .list-group-header {
+            font-weight: 700;
+            font-size: 16px;
+            color: #111827;
+            padding: 10px 4px 6px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-top: 10px;
+        }
+        .list-group-header:first-child {
+            margin-top: 0;
+        }
+        .fine-card {
+            border:1px solid #e5e7eb;
+            border-radius:10px;
+            padding:8px;
+            margin-top: 8px;
+        }
+        .fine-card-header {
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fine-card-body {
+            font-size:13px;
+            color:#374151;
+            margin-top: 4px;
+            display:flex;
+            justify-content: space-between;
+        }
+        .fine-card-footer {
+            margin-top:8px;
+        }
+        .fine-card-plate {
+            font-weight: 600;
+        }
+
+        /* --- ESTILOS PARA REPORTES --- */
+        .report-menu-item {
+            display: block;
+            width: 100%;
+            padding: 12px 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            text-align: left;
+            background: #fff;
+        }
+        .report-menu-item:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        .report-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+        .report-header {
+            background: #f9fafb;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .report-header h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+        }
+        .report-header p {
+            font-size: 12px;
+            color: #6b7280;
+            margin: 0;
+        }
+        .report-body {
+            padding: 12px;
+        }
+        .report-stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .report-stat-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .report-stat-card .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .report-stat-card .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .report-table th, .report-table td {
+            border: 1px solid #e5e7eb;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        .report-table th {
+            background: #f9fafb;
+        }
+        .report-table .num {
+            text-align: right;
+            font-weight: 600;
+        }
 
     </style>
 </head>
@@ -102,6 +267,7 @@
     <button id="tabLogs" class="tab" aria-selected="false">Logs</button>
     <button id="tabEvents" class="tab" aria-selected="false">Events</button>
     <button id="tabFines" class="tab" aria-selected="false">Fines</button>
+    <button id="tabReports" class="tab" aria-selected="false">Reports</button>
 
     <button id="tabSettings" class="tab" aria-selected="false" style="margin-left:12px;">Settings</button>
 
@@ -151,7 +317,7 @@
             </div>
             <div style="flex:2; display:flex; flex-direction:column; gap:10px;">
                 <div style="background:#0b0f17; border-radius:10px; padding:10px;">
-                    <div style="font-weight:700; margin-bottom:6px;">Acciones rápidas</div>
+                    <div style="font-weight:700; margin-bottom:6px;">Quick Actions</div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <button id="btnPolice" class="sw-btn">🚓&nbsp;Police</button>
                         <button id="btnAmb"    class="sw-btn">🚑&nbsp;Ambulance</button>
@@ -160,7 +326,7 @@
                     </div>
                 </div>
                 <div style="background:#0b0f17; border-radius:10px; padding:10px;">
-                    <div style="font-weight:700; margin-bottom:6px;">Nota (opcional)</div>
+                    <div style="font-weight:700; margin-bottom:6px;">Note (optional)</div>
                     <textarea id="secNote" rows="4" style="width:100%; resize:vertical; background:#111827; border:1px solid #374151; color:#fff; border-radius:8px; padding:8px;"></textarea>
                 </div>
             </div>
@@ -176,8 +342,7 @@
       const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 15);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '© OpenStreetMap, © CARTO' }).addTo(map);
 
-      // --- ✅ INICIO: JAVASCRIPT MODIFICADO ---
-      // Se crean grupos duplicados: uno para dispositivos OK y otro para los fallados
+      // --- Grupos duplicados para fallas ---
       const groups = {
         radars: L.layerGroup(),
         parking: L.layerGroup(),
@@ -188,7 +353,6 @@
         security_fail: L.layerGroup(),
         semaphores_fail: L.layerGroup()
       };
-      // --- ✅ FIN: JAVASCRIPT MODIFICADO ---
 
       const deviceLayers = new Map();
 
@@ -205,35 +369,28 @@
       const row=(k,v)=>`<div class="popup-row"><span class="popup-k">${k}</span><span class="popup-v">${v}</span></div>`;
       const card=(t,id,rows)=>`<div class="popup-card">${header(t,id)}<div class="popup-body">${rows}</div></div>`;
 
-      // --- ✅ INICIO: JAVASCRIPT MODIFICADO ---
-      // Se definen los checkboxes fuera de la función para que sean globales
+      // --- Checkboxes globales ---
       const chkRadars = document.getElementById('chkRadars'),
             chkParking = document.getElementById('chkParking'),
             chkSecurity = document.getElementById('chkSecurity'),
             chkSemaphores = document.getElementById('chkSemaphores'),
-            chkFails = document.getElementById('chkFails'); // El nuevo checkbox
+            chkFails = document.getElementById('chkFails');
 
-      // La función de visibilidad ahora decide qué grupos (normales o fallados) mostrar
+      // --- Función de visibilidad actualizada ---
       function applyVisibility() {
         const showFailsOnly = chkFails.checked;
 
-        // Función helper para no repetir lógica
         const setVisibility = (normalGroup, failGroup, isChecked) => {
-            // Siempre quitar ambos grupos primero
             map.removeLayer(normalGroup);
             map.removeLayer(failGroup);
-
             if (isChecked) {
                 if (showFailsOnly) {
-                    // Si "Show Fails Only" está activo, solo añadir el grupo de fallados
                     map.addLayer(failGroup);
                 } else {
-                    // Si no, añadir ambos grupos (normales Y fallados)
                     map.addLayer(normalGroup);
                     map.addLayer(failGroup);
                 }
             }
-            // Si isChecked es false, ambos grupos permanecen quitados
         };
 
         setVisibility(groups.radars, groups.radars_fail, chkRadars.checked);
@@ -241,24 +398,23 @@
         setVisibility(groups.security, groups.security_fail, chkSecurity.checked);
         setVisibility(groups.semaphores, groups.semaphores_fail, chkSemaphores.checked);
       }
-      // Asignar el evento a TODOS los checkboxes
       chkRadars.onchange = applyVisibility;
       chkParking.onchange = applyVisibility;
       chkSecurity.onchange = applyVisibility;
       chkSemaphores.onchange = applyVisibility;
-      chkFails.onchange = applyVisibility; // El nuevo checkbox también dispara la función
-      // --- ✅ FIN: JAVASCRIPT MODIFICADO ---
+      chkFails.onchange = applyVisibility;
 
       async function repairDevice(id){
         try{
           let res = await fetch(`/api/devices/${encodeURIComponent(id)}/repair`);
           if(!res.ok) res = await fetch(`/api/devices/${encodeURIComponent(id)}/status?action=REPAIR`, {method:'POST'});
-          await loadDevices(); // Recargar todos los dispositivos para que cambien de grupo
+          await loadDevices();
         }catch(e){console.error(e);}
       }
       function repairBtn(item){
         const st = String(item.status||'').toUpperCase();
         if (['ERROR','YELLOW','INTERMITTENT','FAILURE'].includes(st)){
+          // ✅ TRADUCIDO
           return `<div style="margin-top:8px;text-align:right"><button class="btn btn-ghost btn-rep" data-id="${item.id}">Repair</button></div>`;
         }
         return '';
@@ -268,13 +424,13 @@
       }
 
       function addDevices(data){
-        // Limpiar todos los grupos, incluyendo los nuevos de fallas
         Object.values(groups).forEach(g => g.clearLayers());
         deviceLayers.clear();
         const ftrs=[];
 
         (data.radars||[]).forEach(r=>{
           const ic=isErr(r.status)?ICONS.radar.err:ICONS.radar.ok;
+          // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
           m.on('popupopen',ev=>attachRepair(ev,r.id));
           (isErr(r.status) ? groups.radars_fail : groups.radars).addLayer(m);
@@ -282,6 +438,7 @@
         });
         (data.parkingCameras||[]).forEach(p=>{
           const ic=isErr(p.status)?ICONS.parking.err:ICONS.parking.ok;
+          // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
           m.on('popupopen',ev=>attachRepair(ev,p.id));
           (isErr(p.status) ? groups.parking_fail : groups.parking).addLayer(m);
@@ -289,6 +446,7 @@
         });
         (data.cameras||data.securityCameras||[]).forEach(c=>{
           const ic=isErr(c.status)?ICONS.camera.err:ICONS.camera.ok;
+          // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
           m.on('popupopen',ev=>attachRepair(ev,c.id));
           if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); }
@@ -296,54 +454,42 @@
           deviceLayers.set(c.id,m); ftrs.push(m);
         });
 
-        // --- ✅ INICIO DE LA CORRECCIÓN EN SEMÁFOROS ---
         (data.semaphores||[]).forEach(s=>{
-          // Lógica de color corregida:
-          // 1. Determinar el color: si el status del dispositivo es ERROR, usar color 'ERROR' (violeta).
-          // 2. Si no, usar el color de la luz principal (s.a).
           const markerColor = isErr(s.status) ? colorFor('ERROR') : colorFor(s.a);
-
+          // ✅ TRADUCIDO (textos del popup)
           const cm=L.circleMarker([s.lat,s.lng],{
             radius:7,
             fillOpacity:.95,
             color:'#000',
             weight:1,
             fillColor: markerColor,
-            deviceStatus: s.status // <-- Guardamos el estado del dispositivo aquí
+            deviceStatus: s.status
           }).bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+repairBtn(s)));
 
           cm.on('popupopen',ev=>attachRepair(ev,s.id));
-          // Añadir al grupo correcto (normal o fallado) basado en el estado del dispositivo
           (isErr(s.status) ? groups.semaphores_fail : groups.semaphores).addLayer(cm);
           deviceLayers.set(s.id,cm); ftrs.push(cm);
         });
-        // --- ✅ FIN DE LA CORRECCIÓN ---
 
         if(ftrs.length){const g=L.featureGroup(ftrs); map.fitBounds(g.getBounds().pad(.15));}
-        applyVisibility(); // Aplicar la visibilidad inicial
+        applyVisibility();
       }
       async function loadDevices(){ try{ const r=await fetch('/api/devices',{cache:'no-store'}); if(!r.ok) throw 0; addDevices(await r.json()); }catch(e){ console.warn('Could not load /api/devices',e); } }
-      loadDevices(); // Carga inicial
+      loadDevices();
 
-      // Esta función actualiza el color de la LUZ del semáforo, no su estado de FALLA.
-      // El estado de falla (círculo violeta) solo se actualiza con loadDevices().
       window.updateSemaphoreStatus=(id,a,b)=>{
         const m=deviceLayers.get(id);
-
-        // 1. Actualizar el color de la luz (SOLO si el dispositivo no está en ERROR)
-        //    Lee el 'deviceStatus' que guardamos en el marker.
         if (m && m.setStyle && !isErr(m.options.deviceStatus)) {
             m.setStyle({fillColor: colorFor(a)});
         }
-
-        // 2. Actualizar el popup (siempre)
         if(m && m.getPopup()) {
-            const currentStatus = m.options.deviceStatus || 'READY'; // Usar el status guardado
+            const currentStatus = m.options.deviceStatus || 'READY';
+            // ✅ TRADUCIDO (textos del popup)
             m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?')+repairBtn({id, status:currentStatus})));
         }
       };
       async function updateTrafficLights(){ try{ const r=await fetch('/api/trafficlights'); if(!r.ok) throw 0; (await r.json()).forEach(tl=>window.updateSemaphoreStatus(tl.id, tl.a, tl.b)); }catch(e){} }
-      setInterval(updateTrafficLights, 800); // Esto sigue actualizando el popup de los semáforos OK
+      setInterval(updateTrafficLights, 800);
 
       function showToast(title,sub){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast';t.innerHTML=`<div class="title">${title}</div><div class="subtitle">${sub}</div>`;c.appendChild(t);const rm=()=>t.remove();t.addEventListener('click',rm);setTimeout(rm,4000);}
       async function checkForFines(){ try{ const r=await fetch('/api/lastFine',{cache:'no-store'}); if(!r.ok) return; const data=await r.json?.()??{}; if(!data || Object.keys(data).length===0){ const text=await r.text(); if(text&&text.trim()!==""){ showToast("🚨 New fine generated","Violation PDF created."); await fetch('/api/clearFine'); } return;} if(data.fineNumber||data.plate||data.type){ const sub=`Nº ${data.fineNumber??'-'} • ${data.type??'Violation'} • ${data.plate??''}`; showToast("🚨 New fine generated",sub); await fetch('/api/clearFine'); } }catch(e){} }
@@ -373,184 +519,461 @@
       /* ============ Drawer (Logs / Eventos / Multas) ============ */
       const drawer=document.getElementById('drawer'), drawerTitle=document.getElementById('drawerTitle'), drawerContent=document.getElementById('drawerContent'), drawerClose=document.getElementById('drawerClose');
 
-      const tabLogs=document.getElementById('tabLogs'), tabEvents=document.getElementById('tabEvents'), tabFines=document.getElementById('tabFines'), tabSettings=document.getElementById('tabSettings');
+      // ✅ Botón de Reportes AÑADIDO
+      const tabLogs=document.getElementById('tabLogs'), tabEvents=document.getElementById('tabEvents'), tabFines=document.getElementById('tabFines'), tabReports=document.getElementById('tabReports'), tabSettings=document.getElementById('tabSettings');
 
       function openDrawer(title){ drawerTitle.textContent=title; drawer.style.display='block'; drawer.setAttribute('aria-hidden','false'); }
       function closeDrawer(){ drawer.style.display='none'; drawer.setAttribute('aria-hidden','true'); }
       drawerClose.onclick=closeDrawer;
 
-      function selectTab(btn){ [tabLogs,tabEvents,tabFines,tabSettings].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
+      // ✅ Botón de Reportes AÑADIDO
+      function selectTab(btn){ [tabLogs,tabEvents,tabFines,tabReports,tabSettings].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
 
       function fmtTs(ts){
         if (!ts) return 'N/A';
         try{ return new Date(ts).toLocaleString(); }catch{ return ts; }
       }
-
-      function renderLogs(items){
-        const html = `
-          <div class="row" style="margin-bottom:10px">
-            <span class="pill">Total: ${items.length}</span>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:8px">
-            ${items.map(it=>`
-              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-                <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
-                <div style="font-size:12px; color:#6b7280">${fmtTs(it.timestamp)}</div>
-                ${it.note?`<div style="margin-top:6px">${it.note}</div>`:''}
-                ${it.imagePath?`<div style="margin-top:6px"><a href="${it.imagePath}" target="_blank" rel="noopener">ver</a></div>`:''}
-              </div>`).join('')}
-          </div>`;
-        drawerContent.innerHTML=html;
+      function fmtPct(num) {
+        if (num == null) return 'N/A';
+        return num.toFixed(2) + ' %';
       }
-
-      function renderFines(fines){
-        const html = `
-          <div class="row" style="margin-bottom:10px">
-            <button id="btnClearFines" class="btn danger">Delete all</button>
-            <span class="pill">Total: ${fines.length}</span>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:8px">
-            ${fines.map(f=>`
-              <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-
-                <div><b>#${f.fineId ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
-
-                <div class="row" style="font-size:12px; color:#6b7280">
-                  <span>${f.plate ?? '-'}</span>
-                  <span>${f.amount!=null?('$ '+f.amount):''}</span>
-
-                  <span>${fmtTs(f.fineDate)}</span>
-
-                </div>
-                ${f.pdfPath?`<div style="margin-top:6px"><a class="btn" href="${f.pdfPath}" target="_blank" rel="noopener">Ver PDF</a></div>`:''}
-              </div>`).join('')}
-          </div>`;
-        drawerContent.innerHTML=html;
-        const btn=document.getElementById('btnClearFines');
-        if(btn) btn.onclick = async ()=>{
-          if(!confirm('Are you sure you want to delete all fines?')) return;
-          try{ const r=await fetch('/api/fines',{method:'DELETE'}); if(!r.ok) throw 0; showToast('🧹 Cleaned fines','All fines were deleted successfully'); loadFines(); }catch(e){ showToast('⚠️ Error','Could not clear fines'); }
-        };
+      function fmtCurrency(num) {
+        if (num == null) return '';
+        // Usamos 'en-US' para formato con comas y puntos, pero con prefijo $
+        return '$ ' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
       async function loadLogs(){
         try{
-          let r=await fetch('/api/security/logs');
-          if(!r.ok) r=await fetch('/api/security/log');
-          if(!r.ok) throw 0;
-          renderLogs(await r.json());
-            }catch(e){ drawerContent.innerHTML='<div class="pill">Error loading logs</div>'; }
+          // ✅ --- ARREGLO: Se llama solo a /api/security/log ---
+          let r = await fetch('/api/security/log');
+          if(!r.ok) throw new Error('Failed to fetch logs');
+
+          const items = await r.json();
+          items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          const html = `
+            <div class="row" style="margin-bottom:10px">
+              <span class="pill">Total: ${items.length}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              ${items.map(it=>`
+                <div class="fine-card">
+                  <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                  <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                  ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                  ${it.imagePath?`<div class="fine-card-footer"><a class="btn" href="${it.imagePath}" target="_blank" rel="noopener" style="padding: 4px 8px; font-size: 12px;">View Photo</a></div>`:''}
+                </div>`).join('')}
+            </div>`;
+          drawerContent.innerHTML=html;
+        }catch(e){
+          // ✅ TRADUCIDO
+          drawerContent.innerHTML=`<div class="pill">Error loading logs: ${e.message}</div>`;
+        }
+      }
+
+      // --- LÓGICA PARA FILTRAR "FINES" ---
+      let allFinesCache = [];
+      let currentFinesSort = 'recent';
+
+      function renderFinesList(sortBy) {
+        currentFinesSort = sortBy;
+        const filterSelect = document.getElementById('fines-filter-select');
+        if (filterSelect) filterSelect.value = sortBy;
+        const container = document.getElementById('fines-list-container');
+        if (!container) return;
+
+        let finesHtml = '';
+        let filteredFines = allFinesCache;
+
+        if (sortBy === 'recent') {
+          filteredFines.sort((a, b) => new Date(b.fineDate) - new Date(a.fineDate));
+          finesHtml = filteredFines.map(f => `
+            <div class="fine-card">
+              <div class="fine-card-header">
+                <b style="font-size: 14px;">#${f.fineId ?? '-'} • ${f.type ?? 'FINE'}</b>
+                <span class="pill fine-card-plate">${f.car?.plate ?? '-'}</span>
+              </div>
+              <div class="fine-card-body">
+                <span>${fmtCurrency(f.amount)}</span>
+                <span style="font-size: 12px;">${fmtTs(f.fineDate)}</span>
+              </div>
+              ${f.pdfPath ? `<div class="fine-card-footer"><a class="btn" href="${f.pdfPath}" target="_blank" rel="noopener" style="padding: 4px 8px; font-size: 12px;">View PDF</a></div>`: ''}
+            </div>
+          `).join('');
+        } else if (sortBy === 'type') {
+          const groups = {};
+          for (const fine of filteredFines) {
+            const type = fine.type || 'UNKNOWN';
+            if (!groups[type]) groups[type] = [];
+            groups[type].push(fine);
+          }
+          for (const type in groups) {
+            groups[type].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+          }
+          const sortedTypes = Object.keys(groups).sort();
+          for (const type of sortedTypes) {
+            finesHtml += `<h4 class="list-group-header">${type} (${groups[type].length})</h4>`;
+            finesHtml += groups[type].map(f => `
+              <div class="fine-card">
+                <div class="fine-card-header">
+                  <b style="font-size: 14px;">#${f.fineId ?? '-'}</b>
+                  <span class="pill fine-card-plate">${f.car?.plate ?? '-'}</span>
+                </div>
+                <div class="fine-card-body">
+                  <span>${fmtCurrency(f.amount)}</span>
+                  <span style="font-size: 12px;">${fmtTs(f.fineDate)}</span>
+                </div>
+                ${f.pdfPath ? `<div class="fine-card-footer"><a class="btn" href="${f.pdfPath}" target="_blank" rel="noopener" style="padding: 4px 8px; font-size: 12px;">View PDF</a></div>`: ''}
+              </div>
+            `).join('');
+          }
+        } else {
+          filteredFines = allFinesCache.filter(f => f.type === sortBy);
+          filteredFines.sort((a, b) => new Date(b.fineDate) - new Date(a.fineDate));
+          finesHtml = filteredFines.map(f => `
+            <div class="fine-card">
+              <div class="fine-card-header">
+                <b style="font-size: 14px;">#${f.fineId ?? '-'} • ${f.type ?? 'FINE'}</b>
+                <span class="pill fine-card-plate">${f.car?.plate ?? '-'}</span>
+              </div>
+              <div class="fine-card-body">
+                <span>${fmtCurrency(f.amount)}</span>
+                <span style="font-size: 12px;">${fmtTs(f.fineDate)}</span>
+              </div>
+              ${f.pdfPath ? `<div class="fine-card-footer"><a class="btn" href="${f.pdfPath}" target="_blank" rel="noopener" style="padding: 4px 8px; font-size: 12px;">View PDF</a></div>`: ''}
+            </div>
+          `).join('');
+          if (filteredFines.length === 0) {
+            // ✅ TRADUCIDO
+            finesHtml = '<p style="font-size: 13px; color: #6b7280; padding: 10px;">No fines found for this type.</p>';
+          }
+        }
+        container.innerHTML = finesHtml;
       }
 
       async function loadFines(){
-        try{ const r=await fetch('/api/fines'); if(!r.ok) throw 0; renderFines(await r.json()); }
-        catch(e){ drawerContent.innerHTML='<div class="pill">Error loading fines</div>'; }
+        try {
+          const r = await fetch('/api/fines');
+          if(!r.ok) throw new Error('Failed to fetch fines');
+          allFinesCache = await r.json();
+
+          const fineTypes = [...new Set(allFinesCache.map(f => f.type || 'UNKNOWN'))].sort();
+          // ✅ TRADUCIDO
+          let filterOptions = `
+            <option value="recent">Sort by: Most Recent</option>
+            <option value="type">Sort: Grouped by Type</option>
+            <optgroup label="Filter by type:">
+              ${fineTypes.map(type => `<option value="${type}">Only: ${type}</option>`).join('')}
+            </optgroup>
+          `;
+
+          const html = `
+            <div class="row" style="margin-bottom:10px; align-items: center;">
+              <button id="btnClearFines" class="btn danger">Delete all</button>
+              <span class="pill" style="margin-left: 8px;">Total: ${allFinesCache.length}</span>
+            </div>
+            <div class="filter-nav">
+              <select id="fines-filter-select" class="filter-select">
+                ${filterOptions}
+              </select>
+            </div>
+            <div id="fines-list-container" style="display:flex; flex-direction:column; gap:0px;">
+            </div>`;
+          drawerContent.innerHTML = html;
+          renderFinesList(currentFinesSort);
+          document.getElementById('btnClearFines').onclick = async ()=>{
+            // ✅ TRADUCIDO
+            if(!confirm('Are you sure you want to delete all fines?')) return;
+            try{ const r=await fetch('/api/fines',{method:'DELETE'}); if(!r.ok) throw 0; showToast('🧹 Cleaned fines','All fines were deleted successfully'); loadFines(); }catch(e){ showToast('⚠️ Error','Could not clear fines'); }
+          };
+          document.getElementById('fines-filter-select').onchange = (e) => renderFinesList(e.target.value);
+        } catch(e) {
+          // ✅ TRADUCIDO
+          drawerContent.innerHTML=`<div class="pill">Error loading fines: ${e.message}</div>`;
+        }
+      }
+
+      // --- LÓGICA PARA FILTRAR "EVENTS" ---
+      let allEventsCache = { warnings: [], fines: [] };
+      let currentEventsSort = 'recent';
+
+      function renderEventsList(sortBy) {
+        currentEventsSort = sortBy;
+        const filterSelect = document.getElementById('events-filter-select');
+        if (filterSelect) filterSelect.value = sortBy;
+        const container = document.getElementById('events-list-container');
+        if (!container) return;
+
+        let html = '';
+        const { warnings, fines } = allEventsCache;
+
+        // ✅ TRADUCIDO (group names)
+        const allItems = [
+          ...warnings.map(w => ({ ...w, sortDate: w.timestamp, itemType: 'ALERT', group: `ALERT: ${w.serviceType || 'UNKNOWN'}` })),
+          ...fines.map(f => ({ ...f, sortDate: f.fineDate, itemType: 'FINE', group: `FINE: ${f.type || 'UNKNOWN'}` }))
+        ];
+
+        let itemsToRender = [];
+
+        if (sortBy === 'recent') {
+          allItems.sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
+          itemsToRender = allItems;
+          html = itemsToRender.map(it => {
+            // ✅ TRADUCIDO
+            if (it.itemType === 'ALERT') {
+              return `
+                <div class="fine-card">
+                  <div><b>ALERT: ${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                  <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                  ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                </div>`;
+            } else { // itemType === 'FINE'
+              return `
+                <div class="fine-card">
+                  <div class="fine-card-header">
+                    <b style="font-size: 14px;">FINE: #${it.fineId ?? '-'} • ${it.type ?? ''}</b>
+                    <span class="pill fine-card-plate">${it.car?.plate ?? '-'}</span>
+                  </div>
+                  <div class="fine-card-body">
+                    <span>${fmtCurrency(it.amount)}</span>
+                    <span style="font-size: 12px;">${fmtTs(it.fineDate)}</span>
+                  </div>
+                </div>`;
+            }
+          }).join('');
+        } else if (sortBy === 'type') {
+          const groups = {};
+          for (const item of allItems) {
+            if (!groups[item.group]) groups[item.group] = [];
+            groups[item.group].push(item);
+          }
+          const sortedTypes = Object.keys(groups).sort();
+          for (const type of sortedTypes) {
+            html += `<h4 class="list-group-header">${type} (${groups[type].length})</h4>`;
+            // ✅ TRADUCIDO
+            if (type.startsWith('ALERT:')) {
+              groups[type].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // por fecha
+              html += groups[type].map(it => `
+                <div class="fine-card">
+                  <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                  <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                  ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                </div>
+              `).join('');
+            } else {
+              groups[type].sort((a, b) => (b.amount || 0) - (a.amount || 0)); // por monto
+              html += groups[type].map(f => `
+                <div class="fine-card">
+                  <div class="fine-card-header">
+                    <b style="font-size: 14px;">#${f.fineId ?? '-'}</b>
+                    <span class="pill fine-card-plate">${f.car?.plate ?? '-'}</span>
+                  </div>
+                  <div class="fine-card-body">
+                    <span>${fmtCurrency(f.amount)}</span>
+                    <span style="font-size: 12px;">${fmtTs(f.fineDate)}</span>
+                  </div>
+                </div>
+              `).join('');
+            }
+          }
+        } else {
+          itemsToRender = allItems.filter(item => item.group === sortBy);
+          itemsToRender.sort((a, b) => new Date(b.sortDate) - new Date(a.sortDate));
+          html = itemsToRender.map(it => {
+             // ✅ TRADUCIDO
+             if (it.itemType === 'ALERT') {
+                return `
+                  <div class="fine-card">
+                    <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                    <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                    ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                  </div>`;
+            } else { // itemType === 'FINE'
+                return `
+                  <div class="fine-card">
+                    <div class="fine-card-header">
+                      <b style="font-size: 14px;">#${it.fineId ?? '-'} • ${it.type ?? ''}</b>
+                      <span class="pill fine-card-plate">${it.car?.plate ?? '-'}</span>
+                    </div>
+                    <div class="fine-card-body">
+                      <span>${fmtCurrency(it.amount)}</span>
+                      <span style="font-size: 12px;">${fmtTs(it.fineDate)}</span>
+                    </div>
+                  </div>`;
+            }
+          }).join('');
+          if (itemsToRender.length === 0) {
+             // ✅ TRADUCIDO
+             html = '<p style="font-size: 13px; color: #6b7280; padding: 10px;">No events found for this type.</p>';
+          }
+        }
+        container.innerHTML = html;
       }
 
       async function loadEvents(){
         try {
-          let wr=await fetch('/api/security/logs'); if(!wr.ok) wr=await fetch('/api/security/log');
-          const fr=await fetch('/api/fines');
-          const warnings = wr.ok ? await wr.json() : [];
-          const fines    = fr.ok ? await fr.json() : [];
+          // ✅ --- ARREGLO: Se llama solo a /api/security/log ---
+          let wr = await fetch('/api/security/log');
+          const fr = await fetch('/api/fines');
+
+          if (!wr.ok) throw new Error('Failed to fetch security logs');
+          if (!fr.ok) throw new Error('Failed to fetch fines');
+
+          const warnings = await wr.json();
+          const fines    = await fr.json();
+          allEventsCache = { warnings, fines };
+
+          // ✅ TRADUCIDO
+          const warningTypes = [...new Set(warnings.map(w => `ALERT: ${w.serviceType || 'UNKNOWN'}`))];
+          const fineTypes = [...new Set(fines.map(f => `FINE: ${f.type || 'UNKNOWN'}`))];
+          const allTypes = [...warningTypes, ...fineTypes].sort();
+
+          // ✅ TRADUCIDO
+          let filterOptions = `
+              <option value="recent">Sort by: Most Recent</option>
+              <option value="type">Sort: Grouped by Type</option>
+              <optgroup label="Filter by type:">
+                ${allTypes.map(type => `<option value="${type}">Only: ${type}</option>`).join('')}
+              </optgroup>
+            `;
+
+          // ✅ TRADUCIDO
           const html = `
             <div class="row" style="margin-bottom:10px">
-              <span class="pill">Security Cam Notifications: ${warnings.length}</span>
+              <span class="pill">Security Logs: ${warnings.length}</span>
               <span class="pill">Fines: ${fines.length}</span>
             </div>
-            <div style="display:flex; flex-direction:column; gap:14px">
-              <div><h4>🔔 Security Cam Notifications</h4>${warnings.length? '' : '<div class="pill">No registers</div>'}</div>
-              ${warnings.map(it=>`
-                <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-                  <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
-                  <div style="font-size:12px; color:#6b7280">${fmtTs(it.timestamp)}</div>
-                  ${it.note?`<div style="margin-top:6px">${it.note}</div>`:''}
-                </div>`).join('')}
-              <div><h4 style="margin-top:8px">🧾 Fines</h4>${fines.length? '' : '<div class="pill">No fines found</div>'}</div>
-              ${fines.map(f=>`
-                <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-
-                  <div><b>#${f.fineId ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
-
-                  <div class="row" style="font-size:12px; color:#6b7280">
-                    <span>${f.plate ?? '-'}</span>
-                    <span>${f.amount!=null?('$ '+f.amount):''}</span>
-
-                    <span>${fmtTs(f.fineDate)}</span>
-
-                  </div>
-                </div>`).join('')}
-            </div>`;
+            <div class="filter-nav">
+                <select id="events-filter-select" class="filter-select">
+                    ${filterOptions}
+                </select>
+            </div>
+            <div id="events-list-container" style="display:flex; flex-direction:column; gap:0px;">
+                </div>
+          `;
           drawerContent.innerHTML = html;
+          renderEventsList(currentEventsSort);
+          document.getElementById('events-filter-select').onchange = (e) => renderEventsList(e.target.value);
         } catch (e) {
-          drawerContent.innerHTML='<div class="pill">Error loading events</div>';
+          // ✅ TRADUCIDO
+          drawerContent.innerHTML=`<div class="pill">Error loading events: ${e.message}</div>`;
         }
       }
 
-      // ✅ ==========================================================
-      // ✅ SECCIÓN 'renderSettings' MODIFICADA (tal como estaba antes)
-      // ✅ ==========================================================
-      function renderSettings(){
+      // --- LÓGICA PARA "SETTINGS" ---
+      function renderSettings() {
+        // ✅ TRADUCIDO (Pestañas)
         const html = `
-          <div class="form-box" style="border-color: #ef4444;">
-            <h4 style="margin:0 0 10px 0;">Reset Application State</h4>
-            <p style="font-size:13px; color:#6b7280; margin:0 0 12px 0;">
-              This will delete all saved data (device statuses, logs) and reload the
-              default configuration from <code>devices.json</code> the next time the
-              application server is started.
-            </p>
-            <button id="btnResetApp" class="btn danger">Reset and Delete Saved State</button>
+          <div class="settings-nav">
+            <button class="settings-tab" data-tab="panel-add-car" aria-selected="true">Add Car</button>
+            <button class="settings-tab" data-tab="panel-add-brand">Add Brand</button>
+            <button class="settings-tab" data-tab="panel-add-model">Add Model</button>
+            <button class="settings-tab" data-tab="panel-reset">Reset</button>
           </div>
 
-          <div class="form-box">
-            <h4>Add New Car</h4>
-            <div class="form-grid">
-
-              <div class="form-group">
-                <label for="carBrandSelect">Brand</label>
-                <select id="carBrandSelect" class="form-select">
-                  <option value="">Loading brands...</option>
-                </select>
+          <div id="panel-add-car" class="settings-panel" data-active="true">
+            <div class="form-box">
+              <h4>Add New Car</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="carBrandSelect">Brand</label>
+                  <select id="carBrandSelect" class="form-select">
+                    <option value="">Loading brands...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="carModelSelect">Model</label>
+                  <select id="carModelSelect" class="form-select" disabled>
+                    <option value="">Select a brand first</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="carPlateInput">License Plate</label>
+                  <input type="text" id="carPlateInput" class="form-input" placeholder="AA123BB or AAA123">
+                </div>
+                <div class="form-group">
+                  <label for="carColourInput">Colour</label>
+                  <input type="text" id="carColourInput" class="form-input" placeholder="Black">
+                </div>
+                <div class="form-group full-width">
+                  <label for="carOwnerInput">Owner</label>
+                  <input type="text" id="carOwnerInput" class="form-input" placeholder="John Doe">
+                </div>
+                <div class="form-group full-width">
+                  <label for="carAddressInput">Address</label>
+                  <input type="text" id="carAddressInput" class="form-input" placeholder="123 Main St">
+                </div>
               </div>
-
-              <div class="form-group">
-                <label for="carModelSelect">Model</label>
-                <select id="carModelSelect" class="form-select" disabled>
-                  <option value="">Select a brand first</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="carPlateInput">License Plate</label>
-                <input type="text" id="carPlateInput" class="form-input" placeholder="AA123BB">
-              </div>
-
-              <div class="form-group">
-                <label for="carColourInput">Colour</label>
-                <input type="text" id="carColourInput" class="form-input" placeholder="Black">
-              </div>
-
-              <div class="form-group full-width">
-                <label for="carOwnerInput">Owner</label>
-                <input type="text" id="carOwnerInput" class="form-input" placeholder="John Doe">
-              </div>
-
-              <div class="form-group full-width">
-                <label for="carAddressInput">Address</label>
-                <input type="text" id="carAddressInput" class="form-input" placeholder="123 Main St">
-              </div>
-
+              <button id="btnSaveCar" class="btn ghost" style="margin-top: 12px;">Save Car</button>
             </div>
-            <button id="btnSaveCar" class="btn ghost" style="margin-top: 12px;">Save Car</button>
           </div>
-          `;
+
+          <div id="panel-add-brand" class="settings-panel">
+            <div class="form-box">
+              <h4>Add New Brand</h4>
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="brandNameInput">Brand Name</label>
+                  <input type="text" id="brandNameInput" class="form-input" placeholder="Example: Ford">
+                </div>
+              </div>
+              <button id="btnSaveBrand" class="btn ghost" style="margin-top: 12px;">Save Brand</button>
+            </div>
+          </div>
+
+          <div id="panel-add-model" class="settings-panel">
+            <div class="form-box">
+              <h4>Add New Model</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="modelBrandSelect">Brand</label>
+                  <select id="modelBrandSelect" class="form-select">
+                    <option value="">Loading brands...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="modelNameInput">Model Name</label>
+                  <input type="text" id="modelNameInput" class="form-input" placeholder="Example: Focus">
+                </div>
+              </div>
+              <button id="btnSaveModel" class="btn ghost" style="margin-top: 12px;">Save Model</button>
+            </div>
+          </div>
+
+          <div id="panel-reset" class="settings-panel">
+            <div class="form-box" style="border-color: #ef4444;">
+              <h4 style="margin:0 0 10px 0;">Reset Application State</h4>
+              <p style="font-size:13px; color:#6b7280; margin:0 0 12px 0;">
+                This will delete all saved data (device statuses, logs) and reload the
+                default configuration from <code>devices.json</code> the next time the
+                application server is started.
+              </p>
+              <button id="btnResetApp" class="btn danger">Reset and Delete Saved State</button>
+            </div>
+          </div>
+        `;
         drawerContent.innerHTML = html;
 
-        // --- Lógica para el botón de Reset (existente) ---
+        const tabs = drawerContent.querySelectorAll('.settings-tab');
+        const panels = drawerContent.querySelectorAll('.settings-panel');
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+            panels.forEach(p => p.setAttribute('data-active', 'false'));
+            tab.setAttribute('aria-selected', 'true');
+            const panelId = tab.getAttribute('data-tab');
+            document.getElementById(panelId).setAttribute('data-active', 'true');
+            if (panelId === 'panel-add-car' || panelId === 'panel-add-model') {
+              loadCarBrands();
+            }
+          });
+        });
+
+        // ✅ TRADUCIDO (Alertas)
         document.getElementById('btnResetApp').onclick = async () => {
-          if (!confirm('ARE YOU SURE?\n\nThis will delete all saved data. The application server must be manually restarted afterward.')) {
-            return;
-          }
+          if (!confirm('ARE YOU SURE?\n\nThis will delete all saved data...')) { return; }
           try {
             const r = await fetch('/api/system/reset', { method: 'POST' });
             const res = await r.json();
@@ -562,75 +985,148 @@
           }
         };
 
-        // ✅ --- INICIO: LÓGICA PARA EL FORMULARIO DE AUTOS ---
-        const brandSelect = document.getElementById('carBrandSelect');
-        const modelSelect = document.getElementById('carModelSelect');
+        const carBrandSelect = document.getElementById('carBrandSelect');
+        const modelBrandSelect = document.getElementById('modelBrandSelect');
+        const carModelSelect = document.getElementById('carModelSelect');
         const plateInput = document.getElementById('carPlateInput');
         const colourInput = document.getElementById('carColourInput');
         const ownerInput = document.getElementById('carOwnerInput');
         const addressInput = document.getElementById('carAddressInput');
-        const saveButton = document.getElementById('btnSaveCar');
+        const saveCarButton = document.getElementById('btnSaveCar');
+        const brandNameInput = document.getElementById('brandNameInput');
+        const saveBrandButton = document.getElementById('btnSaveBrand');
+        const modelNameInput = document.getElementById('modelNameInput');
+        const saveModelButton = document.getElementById('btnSaveModel');
 
-        // 1. Cargar Marcas (Brands)
+        let brandsCache = null;
         async function loadCarBrands() {
+          if (brandsCache) {
+            populateBrandSelects(brandsCache);
+            return;
+          }
           try {
             const response = await fetch('/api/cars/brands');
             if (!response.ok) throw new Error('Failed to load brands');
-            const brands = await response.json();
-
-            brandSelect.innerHTML = '<option value="">Select a brand</option>'; // Limpiar
-            brands.forEach(brand => {
-              brandSelect.innerHTML += `<option value="${brand.idbrand}">${brand.name}</option>`;
-            });
+            brandsCache = await response.json();
+            populateBrandSelects(brandsCache);
           } catch (e) {
-            brandSelect.innerHTML = '<option value="">Error loading brands</option>';
             console.error(e);
+            // ✅ TRADUCIDO
+            [carBrandSelect, modelBrandSelect].forEach(sel => sel.innerHTML = '<option value="">Error loading</option>');
           }
         }
 
-        // 2. Cargar Modelos (Models) cuando cambia la marca
+        function populateBrandSelects(brands) {
+          // ✅ TRADUCIDO
+          const defaultOption = '<option value="">Select a brand</option>';
+          const optionsHtml = brands.map(b => `<option value="${b.idbrand}">${b.name}</option>`).join('');
+          carBrandSelect.innerHTML = defaultOption + optionsHtml;
+          modelBrandSelect.innerHTML = defaultOption + optionsHtml;
+        }
+
         async function loadCarModels(brandId) {
+          // ✅ TRADUCIDO
           if (!brandId) {
-            modelSelect.innerHTML = '<option value="">Select a brand first</option>';
-            modelSelect.disabled = true;
+            carModelSelect.innerHTML = '<option value="">Select a brand first</option>';
+            carModelSelect.disabled = true;
             return;
           }
-
-          modelSelect.innerHTML = '<option value="">Loading models...</option>';
-          modelSelect.disabled = false;
-
+          carModelSelect.innerHTML = '<option value="">Loading models...</option>';
+          carModelSelect.disabled = false;
           try {
             const response = await fetch(`/api/cars/models?brandId=${brandId}`);
             if (!response.ok) throw new Error('Failed to load models');
             const models = await response.json();
-
-            modelSelect.innerHTML = '<option value="">Select a model</option>'; // Limpiar
+            carModelSelect.innerHTML = '<option value="">Select a model</option>';
             models.forEach(model => {
-              modelSelect.innerHTML += `<option value="${model.modelid}">${model.name}</option>`;
+              carModelSelect.innerHTML += `<option value="${model.modelid}">${model.name}</option>`;
             });
           } catch (e) {
-            modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            // ✅ TRADUCIDO
+            carModelSelect.innerHTML = '<option value="">Error loading models</option>';
             console.error(e);
           }
         }
 
-        // 3. Guardar el Auto
+        async function saveBrand() {
+          const name = brandNameInput.value.trim();
+          if (!name) {
+            // ✅ TRADUCIDO
+            showToast('⚠️ Error', 'Please enter a brand name.');
+            return;
+          }
+          saveBrandButton.disabled = true;
+          saveBrandButton.textContent = 'Saving...';
+          try {
+            const params = new URLSearchParams();
+            params.append('name', name);
+            const response = await fetch('/api/cars/brands/add', { method: 'POST', body: params });
+            const result = await response.json();
+            if (!response.ok || result.ok === false) throw new Error(result.message);
+            showToast('✅ Success', result.message);
+            brandNameInput.value = '';
+            brandsCache = null;
+          } catch (e) {
+            showToast('❌ Error', e.message);
+          } finally {
+            // ✅ TRADUCIDO
+            saveBrandButton.disabled = false;
+            saveBrandButton.textContent = 'Save Brand';
+          }
+        }
+
+        async function saveModel() {
+          const brandId = modelBrandSelect.value;
+          const name = modelNameInput.value.trim();
+          if (!brandId || !name) {
+            // ✅ TRADUCIDO
+            showToast('⚠️ Error', 'Please select a brand and enter a model name.');
+            return;
+          }
+          saveModelButton.disabled = true;
+          saveModelButton.textContent = 'Saving...';
+          try {
+            const params = new URLSearchParams();
+            params.append('brandId', brandId);
+            params.append('name', name);
+            const response = await fetch('/api/cars/models/add', { method: 'POST', body: params });
+            const result = await response.json();
+            if (!response.ok || result.ok === false) throw new Error(result.message);
+            showToast('✅ Success', result.message);
+            modelNameInput.value = '';
+            modelBrandSelect.value = '';
+          } catch (e) {
+            showToast('❌ Error', e.message);
+          } finally {
+            // ✅ TRADUCIDO
+            saveModelButton.disabled = false;
+            saveModelButton.textContent = 'Save Model';
+          }
+        }
+
         async function saveCar() {
-          const brandId = brandSelect.value;
-          const modelId = modelSelect.value;
+          const brandId = carBrandSelect.value;
+          const modelId = carModelSelect.value;
           const plate = plateInput.value.trim().toUpperCase();
           const colour = colourInput.value.trim();
           const owner = ownerInput.value.trim();
           const address = addressInput.value.trim();
 
           if (!brandId || !modelId || !plate || !colour || !owner || !address) {
+            // ✅ TRADUCIDO
             showToast('⚠️ Error', 'Please complete all fields to add a car.');
             return;
           }
 
-          saveButton.disabled = true;
-          saveButton.textContent = 'Saving...';
+          const plateRegex = /^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/;
+          if (!plateRegex.test(plate)) {
+            // ✅ TRADUCIDO
+            showToast('❌ Invalid Plate', 'Format must be AAA123 or AA123BB.');
+            return;
+          }
 
+          saveCarButton.disabled = true;
+          saveCarButton.textContent = 'Saving...';
           try {
             const params = new URLSearchParams();
             params.append('brandId', brandId);
@@ -640,48 +1136,445 @@
             params.append('owner', owner);
             params.append('address', address);
 
-            const response = await fetch('/api/cars/add', {
-              method: 'POST',
-              body: params
-            });
-
+            const response = await fetch('/api/cars/add', { method: 'POST', body: params });
             const result = await response.json();
-            if (!response.ok || result.ok === false) {
-              throw new Error(result.message || 'Failed to save car');
-            }
+            if (!response.ok || result.ok === false) throw new Error(result.message);
 
-            showToast('✅ Success', result.message || 'Car added successfully');
-            // Limpiar formulario
+            showToast('✅ Success', result.message);
             plateInput.value = '';
             colourInput.value = '';
             ownerInput.value = '';
             addressInput.value = '';
-            brandSelect.value = '';
-            modelSelect.innerHTML = '<option value="">Select a brand first</option>';
-            modelSelect.disabled = true;
-
+            carBrandSelect.value = '';
+            // ✅ TRADUCIDO
+            carModelSelect.innerHTML = '<option value="">Select a brand first</option>';
+            carModelSelect.disabled = true;
           } catch (e) {
             showToast('❌ Error', e.message);
           } finally {
-            saveButton.disabled = false;
-            saveButton.textContent = 'Save Car';
+            // ✅ TRADUCIDO
+            saveCarButton.disabled = false;
+            saveCarButton.textContent = 'Save Car';
           }
         }
 
-        // 4. Asignar Eventos
-        brandSelect.addEventListener('change', () => loadCarModels(brandSelect.value));
-        saveButton.addEventListener('click', saveCar);
+        carBrandSelect.addEventListener('change', () => loadCarModels(carBrandSelect.value));
+        saveCarButton.addEventListener('click', saveCar);
+        saveBrandButton.addEventListener('click', saveBrand);
+        saveModelButton.addEventListener('click', saveModel);
 
-        // 5. Carga inicial de marcas
         loadCarBrands();
-        // --- ✅ FIN: LÓGICA ---
       }
 
-      // Tabs
+      // --- LÓGICA DE REPORTES ---
+
+      // ✅ TRADUCIDO (Menú de Reportes)
+      function renderReportsMenu() {
+        drawerContent.innerHTML = `
+          <button class="report-menu-item" id="btn-report-devices">1. Device Status Report</button>
+          <button class="report-menu-item" id="btn-report-fines">2. Fines Summary Report</button>
+          <button class="report-menu-item" id="btn-report-plate">3. Fines by Plate Report</button>
+          <button class="report-menu-item" id="btn-report-security">4. Security Logs Report</button>
+          <button class="report-menu-item" id="btn-report-events">5. Events by Device Report</button>
+        `;
+        // Asignar clicks
+        document.getElementById('btn-report-devices').onclick = renderDeviceStatusReport;
+        document.getElementById('btn-report-fines').onclick = renderFinesSummaryReport;
+        document.getElementById('btn-report-plate').onclick = renderFinesByPlateReport;
+        document.getElementById('btn-report-security').onclick = renderSecurityLogsReport;
+        document.getElementById('btn-report-events').onclick = renderDeviceEventsReport;
+      }
+
+      // ✅ TRADUCIDO (Reporte 1)
+      async function renderDeviceStatusReport() {
+        const html = `
+          <button class="btn" id="btn-back-reports">← Back to Menu</button>
+          <div class="form-box" style="margin-top: 12px;">
+            <h4>Report 1: Device Status</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Filter by Type</label>
+                <select id="rep1-type" class="filter-select">
+                  <option value="ALL">All Types</option>
+                  <option value="Radar">Radar</option>
+                  <option value="ParkingCamera">ParkingCamera</option>
+                  <option value="SecurityCamera">SecurityCamera</option>
+                  <option value="TrafficLight">TrafficLight</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Filter by Status</label>
+                <select id="rep1-status" class="filter-select">
+                  <option value="ALL">All Statuses</option>
+                  <option value="NORMAL">Normal</option>
+                  <option value="FAILURE">With Failure</option>
+                </select>
+              </div>
+            </div>
+            <button id="rep1-run" class="btn ghost" style="margin-top: 12px;">Generate Report</button>
+          </div>
+          <div id="rep1-results" style="margin-top: 12px;"></div>
+        `;
+        drawerContent.innerHTML = html;
+        document.getElementById('btn-back-reports').onclick = renderReportsMenu;
+        document.getElementById('rep1-run').onclick = async () => {
+          const type = document.getElementById('rep1-type').value;
+          const status = document.getElementById('rep1-status').value;
+          const resultsEl = document.getElementById('rep1-results');
+          resultsEl.innerHTML = `<span class="pill">Loading...</span>`;
+
+          try {
+            const res = await fetch(`/api/reports/device-status?type=${type}&status=${status}`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+
+            resultsEl.innerHTML = `
+              <div class="report-container">
+                <div class="report-header">
+                  <h4>Report Results</h4>
+                  <p>Generated: ${data.reportTimestamp}</p>
+                </div>
+                <div class="report-body">
+                  <div class="report-stat-grid">
+                    <div class="report-stat-card">
+                      <div class="stat-value">${data.totalNormal}</div>
+                      <div class="stat-label">Normal (${fmtPct(data.pctNormal)})</div>
+                    </div>
+                    <div class="report-stat-card" style="border-color: #ef4444;">
+                      <div class="stat-value">${data.totalFailure}</div>
+                      <div class="stat-label">With Failure (${fmtPct(data.pctFailure)})</div>
+                    </div>
+                  </div>
+
+                  <h5 style="margin: 16px 0 8px 0;">Breakdown by Type</h5>
+                  <table class="report-table">
+                    <thead><tr><th>Device Type</th><th>Total</th></tr></thead>
+                    <tbody>
+                    ${Object.entries(data.countByType).map(([key, val]) => `
+                      <tr><td>${key}</td><td class="num">${val}</td></tr>
+                    `).join('')}
+                      <tr style="background: #f3f4f6;">
+                        <th>Grand Total</th>
+                        <th class="num">${data.totalDevices}</th>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <h5 style="margin: 16px 0 8px 0;">Device List (${data.devices.length})</h5>
+                  <table class="report-table">
+                    <thead><tr><th>ID</th><th>Type</th><th>Status</th></tr></thead>
+                    <tbody>
+                    ${data.devices.map(d => `
+                      <tr>
+                        <td>${d.deviceId}</td>
+                        <td>${d.type}</td>
+                        <td style="color: ${d.status === 'NORMAL' || d.status === 'UNKNOWN' ? 'green' : 'red'}">${d.status}</td>
+                      </tr>
+                    `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `;
+          } catch (e) {
+            resultsEl.innerHTML = `<span class="pill danger">Error loading report: ${e.message}</span>`;
+          }
+        };
+      }
+
+      // ✅ TRADUCIDO (Reporte 2)
+      async function renderFinesSummaryReport() {
+        drawerContent.innerHTML = `
+          <button class="btn" id="btn-back-reports">← Back to Menu</button>
+          <div id="rep2-results" style="margin-top: 12px;"><span class="pill">Loading...</span></div>
+        `;
+        document.getElementById('btn-back-reports').onclick = renderReportsMenu;
+
+        try {
+            const res = await fetch(`/api/reports/fines`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+            const stats = data.globalStats;
+
+            let groupsHtml = data.groups.map(g => `
+              <h5 style="margin: 16px 0 8px 0;">Group: ${g.type}</h5>
+              <table class="report-table">
+                <thead>
+                  <tr><th>Fine ID</th><th>Plate</th><th>Amount</th></tr>
+                </thead>
+                <tbody>
+                ${g.fines.map(f => `
+                  <tr>
+                    <td>#${f.fineId}</td>
+                    <td>${f.car?.plate ?? '-'}</td>
+                    <td class="num">${fmtCurrency(f.amount)}</td>
+                  </tr>`).join('')}
+                  <tr style="background: #f3f4f6;">
+                    <th colspan="2">Group Total (${g.count} fines)</th>
+                    <th class="num">${fmtCurrency(g.totalAmount)}</th>
+                  </tr>
+                </tbody>
+              </table>
+            `).join('');
+
+            document.getElementById('rep2-results').innerHTML = `
+              <div class="report-container">
+                <div class="report-header"><h4>Report 2: Fines Summary</h4></div>
+                <div class="report-body">
+                  <h5 style="margin: 0 0 8px 0;">Final Summary</h5>
+                  <table class="report-table">
+                    <tbody>
+                      <tr><td>Total Fines Count</td><td class="num">${stats.totalCount}</td></tr>
+                      <tr><td>Total Fines Amount</td><td class="num">${fmtCurrency(stats.totalAmount)}</td></tr>
+                      <tr><td>Average Fine Amount</td><td class="num">${fmtCurrency(stats.averageAmount)}</td></tr>
+                      <tr><td>Minimum Fine Amount</td><td class="num">${fmtCurrency(stats.minAmount)}</td></tr>
+                      <tr><td>Maximum Fine Amount</td><td class="num">${fmtCurrency(stats.maxAmount)}</td></tr>
+                    </tbody>
+                  </table>
+                  ${groupsHtml}
+                </div>
+              </div>
+            `;
+        } catch (e) {
+            document.getElementById('rep2-results').innerHTML = `<span class="pill danger">Error loading report: ${e.message}</span>`;
+        }
+      }
+
+      // ✅ TRADUCIDO (Reporte 3)
+      function renderFinesByPlateReport() {
+        const html = `
+          <button class="btn" id="btn-back-reports">← Back to Menu</button>
+          <div class="form-box" style="margin-top: 12px;">
+            <h4>Report 3: Fines by Plate</h4>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Enter License Plate (e.g., AA123BB)</label>
+                <input type="text" id="rep3-plate" class="filter-input" placeholder="AA123BB">
+              </div>
+            </div>
+            <button id="rep3-run" class="btn ghost" style="margin-top: 12px;">Search</button>
+          </div>
+          <div id="rep3-results" style="margin-top: 12px;"></div>
+        `;
+        drawerContent.innerHTML = html;
+        document.getElementById('btn-back-reports').onclick = renderReportsMenu;
+        document.getElementById('rep3-run').onclick = async () => {
+          const plate = document.getElementById('rep3-plate').value.trim().toUpperCase();
+          const resultsEl = document.getElementById('rep3-results');
+          if (!plate) {
+            resultsEl.innerHTML = `<span class="pill">Please enter a license plate.</span>`;
+            return;
+          }
+          resultsEl.innerHTML = `<span class="pill">Searching...</span>`;
+          try {
+            const res = await fetch(`/api/reports/fines-by-plate?plate=${plate}`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+
+            if (data.length === 0) {
+              resultsEl.innerHTML = `<span class="pill">No fines found for plate ${plate}.</span>`;
+              return;
+            }
+
+            resultsEl.innerHTML = `
+              <div class="report-container">
+                <div class="report-header"><h4>Fines for ${plate} (${data.length})</h4></div>
+                <div class="report-body">
+                  <table class="report-table">
+                    <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Device</th></tr></thead>
+                    <tbody>
+                    ${data.map(f => `
+                      <tr>
+                        <td>${fmtTs(f.fineDate)}</td>
+                        <td>${f.type}</td>
+                        <td class="num">${fmtCurrency(f.amount)}</td>
+                        <td>${f.deviceId}</td>
+                      </tr>
+                    `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `;
+          } catch (e) {
+            resultsEl.innerHTML = `<span class="pill danger">Error loading report: ${e.message}</span>`;
+          }
+        };
+      }
+
+      // ✅ TRADUCIDO (Reporte 4)
+      function renderSecurityLogsReport() {
+        const html = `
+          <button class="btn" id="btn-back-reports">← Back to Menu</button>
+          <div class="form-box" style="margin-top: 12px;">
+            <h4>Report 4: Security Logs</h4>
+            <p style="font-size:12px; color:#6b7280; margin:4px 0 12px 0;">Filter by date range (optional)</p>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>From</label>
+                <input type="datetime-local" id="rep4-start" class="filter-input">
+              </div>
+              <div class="form-group">
+                <label>To</label>
+                <input type="datetime-local" id="rep4-end" class="filter-input">
+              </div>
+            </div>
+            <button id="rep4-run" class="btn ghost" style="margin-top: 12px;">Generate Report</button>
+          </div>
+          <div id="rep4-results" style="margin-top: 12px;"></div>
+        `;
+        drawerContent.innerHTML = html;
+        document.getElementById('btn-back-reports').onclick = renderReportsMenu;
+        document.getElementById('rep4-run').onclick = async () => {
+          const start = document.getElementById('rep4-start').value;
+          const end = document.getElementById('rep4-end').value;
+          const resultsEl = document.getElementById('rep4-results');
+          resultsEl.innerHTML = `<span class="pill">Loading...</span>`;
+
+          try {
+            const res = await fetch(`/api/reports/security-logs?start=${start}&end=${end}`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+
+            resultsEl.innerHTML = `
+              <div class="report-container">
+                <div class="report-header"><h4>Results (${data.totalCount} alerts)</h4></div>
+                <div class="report-body">
+                  <h5 style="margin: 0 0 8px 0;">Total by Service</h5>
+                  <table class="report-table">
+                    <thead><tr><th>Service</th><th>Count</th><th>Percentage</th></tr></thead>
+                    <tbody>
+                    ${Object.entries(data.counts).map(([key, val]) => `
+                      <tr>
+                        <td>${key}</td>
+                        <td class="num">${val}</td>
+                        <td class="num">${fmtPct(data.percentages[key] || 0)}</td>
+                      </tr>
+                    `).join('')}
+                      <tr style="background: #f3f4f6;">
+                        <th>Grand Total</th>
+                        <th class="num">${data.totalCount}</th>
+                        <th class="num">100.00 %</th>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <h5 style="margin: 16px 0 8px 0;">Alert List (${data.warnings.length})</h5>
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    ${data.warnings.map(it =>`
+                      <div class="fine-card">
+                        <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                        <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                        ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                      </div>`).join('')}
+                  </div>
+                </div>
+              </div>
+            `;
+          } catch (e) {
+            resultsEl.innerHTML = `<span class="pill danger">Error loading report: ${e.message}</span>`;
+          }
+        };
+      }
+
+      // ✅ TRADUCIDO (Reporte 5)
+      async function renderDeviceEventsReport() {
+        let deviceOptions = '<option value="">Loading devices...</option>';
+        try {
+          const res = await fetch('/api/reports/device-ids');
+          const ids = await res.json();
+          deviceOptions = '<option value="">Select a device</option>' +
+            ids.map(id => `<option value="${id}">${id}</option>`).join('');
+        } catch (e) {
+          deviceOptions = '<option value="">Error loading</option>';
+        }
+
+        const html = `
+          <button class="btn" id="btn-back-reports">← Back to Menu</button>
+          <div class="form-box" style="margin-top: 12px;">
+            <h4>Report 5: Events by Device</h4>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label>Select Device</label>
+                <select id="rep5-device" class="filter-select">
+                  ${deviceOptions}
+                </select>
+              </div>
+            </div>
+            <button id="rep5-run" class="btn ghost" style="margin-top: 12px;">Search</button>
+          </div>
+          <div id="rep5-results" style="margin-top: 12px;"></div>
+        `;
+        drawerContent.innerHTML = html;
+        document.getElementById('btn-back-reports').onclick = renderReportsMenu;
+        document.getElementById('rep5-run').onclick = async () => {
+          const deviceId = document.getElementById('rep5-device').value;
+          const resultsEl = document.getElementById('rep5-results');
+          if (!deviceId) {
+            resultsEl.innerHTML = `<span class="pill">Please select a device.</span>`;
+            return;
+          }
+          resultsEl.innerHTML = `<span class="pill">Searching...</span>`;
+
+          try {
+            const res = await fetch(`/api/reports/device-events?deviceId=${deviceId}`);
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+
+            if (data.totalEvents === 0) {
+              resultsEl.innerHTML = `<span class="pill">No events found for ${deviceId}.</span>`;
+              return;
+            }
+
+            resultsEl.innerHTML = `
+              <div class="report-container">
+                <div class="report-header">
+                  <h4>Events for ${deviceId}</h4>
+                  <p>Total: ${data.totalEvents} (${data.fines.length} fines, ${data.warnings.length} alerts)</p>
+                </div>
+                <div class="report-body">
+                  <h5 style="margin: 0 0 8px 0;">Fines (${data.fines.length})</h5>
+                  ${data.fines.length === 0 ? '<p style="font-size:13px; color:#6b7280;">No fines.</p>' : `
+                  <table class="report-table">
+                    <thead><tr><th>Date</th><th>Type</th><th>Plate</th><th>Amount</th></tr></thead>
+                    <tbody>
+                    ${data.fines.map(f => `
+                      <tr>
+                        <td>${fmtTs(f.fineDate)}</td>
+                        <td>${f.type}</td>
+                        <td>${f.car?.plate ?? '-'}</td>
+                        <td class="num">${fmtCurrency(f.amount)}</td>
+                      </tr>
+                    `).join('')}
+                    </tbody>
+                  </table>
+                  `}
+
+                  <h5 style="margin: 16px 0 8px 0;">Security Alerts (${data.warnings.length})</h5>
+                  ${data.warnings.length === 0 ? '<p style="font-size:13px; color:#6b7280;">No alerts.</p>' : `
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    ${data.warnings.map(it =>`
+                      <div class="fine-card">
+                        <div><b>${it.serviceType}</b> • <span class="pill">${it.deviceId}</span></div>
+                        <div style="font-size:12px; color:#6b7280; margin-top: 4px;">${fmtTs(it.timestamp)}</div>
+                        ${it.note?`<div style="margin-top:6px; font-style: italic;">${it.note}</div>`:''}
+                      </div>`).join('')}
+                  </div>
+                  `}
+                </div>
+              </div>
+            `;
+          } catch (e) {
+            resultsEl.innerHTML = `<span class="pill danger">Error loading report: ${e.message}</span>`;
+          }
+        };
+      }
+
+      // --- Asignación de Pestañas ---
       tabLogs.onclick = ()=>{ selectTab(tabLogs); openDrawer('Logs'); loadLogs(); };
       tabEvents.onclick=()=>{ selectTab(tabEvents); openDrawer('Events'); loadEvents(); };
       tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('Fines'); loadFines(); };
-
+      tabReports.onclick = ()=>{ selectTab(tabReports); openDrawer('Reports'); renderReportsMenu(); };
       tabSettings.onclick = ()=>{ selectTab(tabSettings); openDrawer('Settings'); renderSettings(); };
 
     }); // DOMContentLoaded

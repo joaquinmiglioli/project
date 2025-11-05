@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern; // ✅ <--- IMPORTAR ESTO
 
 /**
  * Controlador para la gestión de Marcas, Modelos y Autos (CRUD).
@@ -26,6 +27,9 @@ public class CarManagementController {
     private final CarDAO carDAO;
     private final CarBrandDAO carBrandDAO;
     private final CarModelDAO carModelDAO;
+
+    // ✅ --- REGEX PARA VALIDAR PATENTES ---
+    private static final Pattern PLATE_REGEX = Pattern.compile("^([A-Z]{3}\\d{3}|[A-Z]{2}\\d{3}[A-Z]{2})$");
 
     // Inyectamos el AppContext para acceder a los DAOs
     public CarManagementController(AppContext ctx) {
@@ -62,6 +66,61 @@ public class CarManagementController {
     }
 
     /**
+     * ✅ --- NUEVO ENDPOINT: Añade una nueva MARCA ---
+     */
+    @PostMapping("/brands/add")
+    public Map<String, Object> addBrand(@RequestParam String name) {
+        try {
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) {
+                return Map.of("ok", false, "message", "Brand name cannot be empty.");
+            }
+
+            // Verificar duplicados
+            if (carBrandDAO.findByName(trimmedName).isPresent()) {
+                throw new DuplicateResourceException("CarBrand", "name", trimmedName);
+            }
+
+            carBrandDAO.insert(trimmedName);
+            return Map.of("ok", true, "message", "Brand '" + trimmedName + "' added successfully.");
+
+        } catch (DuplicateResourceException e) {
+            return Map.of("ok", false, "message", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("ok", false, "message", "Error adding brand: " + e.getMessage());
+        }
+    }
+
+    /**
+     * ✅ --- NUEVO ENDPOINT: Añade un nuevo MODELO ---
+     */
+    @PostMapping("/models/add")
+    public Map<String, Object> addModel(@RequestParam Long brandId, @RequestParam String name) {
+        try {
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) {
+                return Map.of("ok", false, "message", "Model name cannot be empty.");
+            }
+
+            // Verificar duplicados
+            if (carModelDAO.findByBrandAndName(brandId, trimmedName).isPresent()) {
+                throw new DuplicateResourceException("CarModel", "name", trimmedName);
+            }
+
+            carModelDAO.insert(brandId, trimmedName);
+            return Map.of("ok", true, "message", "Model '" + trimmedName + "' added successfully.");
+
+        } catch (DuplicateResourceException e) {
+            return Map.of("ok", false, "message", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("ok", false, "message", "Error adding model: " + e.getMessage());
+        }
+    }
+
+
+    /**
      * Añade un nuevo auto a la base de datos.
      */
     @PostMapping("/add")
@@ -73,8 +132,17 @@ public class CarManagementController {
             @RequestParam String address,
             @RequestParam String colour
     ) {
+        // ✅ --- VALIDACIÓN DE PATENTE ---
+        String upperPlate = plate.trim().toUpperCase();
+        if (!PLATE_REGEX.matcher(upperPlate).matches()) {
+            return Map.of(
+                    "ok", false,
+                    "message", "Error: Invalid plate format. Must be AAA123 or AA123BB."
+            );
+        }
+
         try {
-            long newCarId = carDAO.insert(brandId, modelId, plate, owner, address, colour);
+            long newCarId = carDAO.insert(brandId, modelId, upperPlate, owner, address, colour);
 
             return Map.of(
                     "ok", true,
