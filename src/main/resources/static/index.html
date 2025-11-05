@@ -70,6 +70,25 @@
         #securityCard{background:#111827; color:#fff; width:min(92%, 860px); border-radius:14px; box-shadow:0 18px 40px rgba(0,0,0,.45); overflow:hidden;}
         .sw-btn{background:#1f2937; color:#fff; border:1px solid #374151; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:700;}
         .sw-btn-ghost{background:transparent; border-color:#374151;}
+
+        /* ✅ --- NUEVOS ESTILOS PARA EL FORMULARIO --- */
+        .form-box{border:1px solid #e5e7eb; border-radius:10px; padding:12px; margin-top: 16px;}
+        .form-box h4{margin:0 0 10px 0;}
+        .form-grid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px 12px;}
+        .form-group{display:flex; flex-direction:column; gap: 4px;}
+        .form-group label{font-size:13px; font-weight:600;}
+        .form-input, .form-select{
+            width:100%;
+            padding:6px 8px;
+            border-radius:8px;
+            border:1px solid #d1d5db;
+            background:#fff;
+            font-size:14px;
+            box-sizing: border-box; /* Asegura que el padding no desborde */
+        }
+        .form-group.full-width{grid-column: 1 / -1;}
+        /* --- FIN DE NUEVOS ESTILOS --- */
+
     </style>
 </head>
 <body>
@@ -77,7 +96,7 @@
     <div class="brand">City Monitor</div>
     <button id="tabLogs" class="tab" aria-selected="false">Logs</button>
     <button id="tabEvents" class="tab" aria-selected="false">Events</button>
-    <button id="tabFines" class="tab" aria-selected="false">fines</button>
+    <button id="tabFines" class="tab" aria-selected="false">Fines</button>
 
     <button id="tabSettings" class="tab" aria-selected="false" style="margin-left:12px;">Settings</button>
 
@@ -193,17 +212,20 @@
 
         (data.radars||[]).forEach(r=>{
           const ic=isErr(r.status)?ICONS.radar.err:ICONS.radar.ok;
-          const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+row('Address',r.address||'-')+repairBtn(r)));
+          // ✅ LÍNEA MODIFICADA (se quitó Address)
+          const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
           m.on('popupopen',ev=>attachRepair(ev,r.id)); m.addTo(groups.radars); deviceLayers.set(r.id,m); ftrs.push(m);
         });
         (data.parkingCameras||[]).forEach(p=>{
           const ic=isErr(p.status)?ICONS.parking.err:ICONS.parking.ok;
-          const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+row('Address',p.address||'-')+repairBtn(p)));
+          // ✅ LÍNEA MODIFICADA (se quitó Address)
+          const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
           m.on('popupopen',ev=>attachRepair(ev,p.id)); m.addTo(groups.parking); deviceLayers.set(p.id,m); ftrs.push(m);
         });
         (data.cameras||data.securityCameras||[]).forEach(c=>{
           const ic=isErr(c.status)?ICONS.camera.err:ICONS.camera.ok;
-          const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+row('Address',c.address||'-')+repairBtn(c)));
+          // ✅ LÍNEA MODIFICADA (se quitó Address)
+          const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
           m.on('popupopen',ev=>attachRepair(ev,c.id));
           if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); } // overlay solo si no está en error
           m.addTo(groups.security); deviceLayers.set(c.id,m); ftrs.push(m);
@@ -259,7 +281,10 @@
 
       function selectTab(btn){ [tabLogs,tabEvents,tabFines,tabSettings].forEach(b=>b.setAttribute('aria-selected','false')); btn.setAttribute('aria-selected','true'); }
 
-      function fmtTs(ts){ try{ return new Date(ts).toLocaleString(); }catch{ return ts; } }
+      function fmtTs(ts){
+        if (!ts) return 'N/A';
+        try{ return new Date(ts).toLocaleString(); }catch{ return ts; }
+      }
 
       function renderLogs(items){
         const html = `
@@ -287,11 +312,15 @@
           <div style="display:flex; flex-direction:column; gap:8px">
             ${fines.map(f=>`
               <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-                <div><b>#${f.fineNumber ?? f.id ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
+
+                <div><b>#${f.fineId ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
+
                 <div class="row" style="font-size:12px; color:#6b7280">
                   <span>${f.plate ?? '-'}</span>
                   <span>${f.amount!=null?('$ '+f.amount):''}</span>
-                  <span>${fmtTs(f.createdAt ?? f.timestamp ?? '')}</span>
+
+                  <span>${fmtTs(f.fineDate)}</span>
+
                 </div>
                 ${f.pdfPath?`<div style="margin-top:6px"><a class="btn" href="${f.pdfPath}" target="_blank" rel="noopener">Ver PDF</a></div>`:''}
               </div>`).join('')}
@@ -327,7 +356,7 @@
           const html = `
             <div class="row" style="margin-bottom:10px">
               <span class="pill">Security Cam Notifications: ${warnings.length}</span>
-              <span class="pill">fines: ${fines.length}</span>
+              <span class="pill">Fines: ${fines.length}</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:14px">
               <div><h4>🔔 Security Cam Notifications</h4>${warnings.length? '' : '<div class="pill">No registers</div>'}</div>
@@ -337,14 +366,18 @@
                   <div style="font-size:12px; color:#6b7280">${fmtTs(it.timestamp)}</div>
                   ${it.note?`<div style="margin-top:6px">${it.note}</div>`:''}
                 </div>`).join('')}
-              <div><h4 style="margin-top:8px">🧾 fines</h4>${fines.length? '' : '<div class="pill">No fines found</div>'}</div>
+              <div><h4 style="margin-top:8px">🧾 Fines</h4>${fines.length? '' : '<div class="pill">No fines found</div>'}</div>
               ${fines.map(f=>`
                 <div style="border:1px solid #e5e7eb; border-radius:10px; padding:8px">
-                  <div><b>#${f.fineNumber ?? f.id ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
+
+                  <div><b>#${f.fineId ?? '-'}</b> • ${f.type ?? 'FINE'}</div>
+
                   <div class="row" style="font-size:12px; color:#6b7280">
                     <span>${f.plate ?? '-'}</span>
                     <span>${f.amount!=null?('$ '+f.amount):''}</span>
-                    <span>${fmtTs(f.createdAt ?? f.timestamp ?? '')}</span>
+
+                    <span>${fmtTs(f.fineDate)}</span>
+
                   </div>
                 </div>`).join('')}
             </div>`;
@@ -354,9 +387,12 @@
         }
       }
 
+      // ✅ ==========================================================
+      // ✅ SECCIÓN 'renderSettings' MODIFICADA
+      // ✅ ==========================================================
       function renderSettings(){
         const html = `
-          <div style="border:1px solid #e5e7eb; border-radius:10px; padding:12px;">
+          <div class="form-box" style="border-color: #ef4444;">
             <h4 style="margin:0 0 10px 0;">Reset Application State</h4>
             <p style="font-size:13px; color:#6b7280; margin:0 0 12px 0;">
               This will delete all saved data (device statuses, logs) and reload the
@@ -365,9 +401,52 @@
             </p>
             <button id="btnResetApp" class="btn danger">Reset and Delete Saved State</button>
           </div>
-        `;
+
+          <div class="form-box">
+            <h4>Add New Car</h4>
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label for="carBrandSelect">Brand</label>
+                <select id="carBrandSelect" class="form-select">
+                  <option value="">Loading brands...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="carModelSelect">Model</label>
+                <select id="carModelSelect" class="form-select" disabled>
+                  <option value="">Select a brand first</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="carPlateInput">License Plate</label>
+                <input type="text" id="carPlateInput" class="form-input" placeholder="AA123BB">
+              </div>
+
+              <div class="form-group">
+                <label for="carColourInput">Colour</label>
+                <input type="text" id="carColourInput" class="form-input" placeholder="Black">
+              </div>
+
+              <div class="form-group full-width">
+                <label for="carOwnerInput">Owner</label>
+                <input type="text" id="carOwnerInput" class="form-input" placeholder="John Doe">
+              </div>
+
+              <div class="form-group full-width">
+                <label for="carAddressInput">Address</label>
+                <input type="text" id="carAddressInput" class="form-input" placeholder="123 Main St">
+              </div>
+
+            </div>
+            <button id="btnSaveCar" class="btn ghost" style="margin-top: 12px;">Save Car</button>
+          </div>
+          `;
         drawerContent.innerHTML = html;
 
+        // --- Lógica para el botón de Reset (existente) ---
         document.getElementById('btnResetApp').onclick = async () => {
           if (!confirm('ARE YOU SURE?\n\nThis will delete all saved data. The application server must be manually restarted afterward.')) {
             return;
@@ -376,20 +455,132 @@
             const r = await fetch('/api/system/reset', { method: 'POST' });
             const res = await r.json();
             if (!r.ok || res.ok === false) throw new Error(res.message);
-
-            // ✅ ESTA ES LA LÍNEA CORREGIDA (sin el 'Write-up')
             alert('SUCCESS: ' + res.message);
             closeDrawer();
           } catch (e) {
             alert('ERROR: Could not reset state.\n' + e.message);
           }
         };
+
+        // ✅ --- INICIO: NUEVA LÓGICA PARA EL FORMULARIO DE AUTOS ---
+        const brandSelect = document.getElementById('carBrandSelect');
+        const modelSelect = document.getElementById('carModelSelect');
+        const plateInput = document.getElementById('carPlateInput');
+        const colourInput = document.getElementById('carColourInput');
+        const ownerInput = document.getElementById('carOwnerInput');
+        const addressInput = document.getElementById('carAddressInput');
+        const saveButton = document.getElementById('btnSaveCar');
+
+        // 1. Cargar Marcas (Brands)
+        async function loadCarBrands() {
+          try {
+            const response = await fetch('/api/cars/brands');
+            if (!response.ok) throw new Error('Failed to load brands');
+            const brands = await response.json();
+
+            brandSelect.innerHTML = '<option value="">Select a brand</option>'; // Limpiar
+            brands.forEach(brand => {
+              brandSelect.innerHTML += `<option value="${brand.idbrand}">${brand.name}</option>`;
+            });
+          } catch (e) {
+            brandSelect.innerHTML = '<option value="">Error loading brands</option>';
+            console.error(e);
+          }
+        }
+
+        // 2. Cargar Modelos (Models) cuando cambia la marca
+        async function loadCarModels(brandId) {
+          if (!brandId) {
+            modelSelect.innerHTML = '<option value="">Select a brand first</option>';
+            modelSelect.disabled = true;
+            return;
+          }
+
+          modelSelect.innerHTML = '<option value="">Loading models...</option>';
+          modelSelect.disabled = false;
+
+          try {
+            const response = await fetch(`/api/cars/models?brandId=${brandId}`);
+            if (!response.ok) throw new Error('Failed to load models');
+            const models = await response.json();
+
+            modelSelect.innerHTML = '<option value="">Select a model</option>'; // Limpiar
+            models.forEach(model => {
+              modelSelect.innerHTML += `<option value="${model.modelid}">${model.name}</option>`;
+            });
+          } catch (e) {
+            modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            console.error(e);
+          }
+        }
+
+        // 3. Guardar el Auto
+        async function saveCar() {
+          const brandId = brandSelect.value;
+          const modelId = modelSelect.value;
+          const plate = plateInput.value.trim().toUpperCase();
+          const colour = colourInput.value.trim();
+          const owner = ownerInput.value.trim();
+          const address = addressInput.value.trim();
+
+          if (!brandId || !modelId || !plate || !colour || !owner || !address) {
+            showToast('⚠️ Error', 'Please complete all fields to add a car.');
+            return;
+          }
+
+          saveButton.disabled = true;
+          saveButton.textContent = 'Saving...';
+
+          try {
+            const params = new URLSearchParams();
+            params.append('brandId', brandId);
+            params.append('modelId', modelId);
+            params.append('plate', plate);
+            params.append('colour', colour);
+            params.append('owner', owner);
+            params.append('address', address);
+
+            const response = await fetch('/api/cars/add', {
+              method: 'POST',
+              body: params
+            });
+
+            const result = await response.json();
+            if (!response.ok || result.ok === false) {
+              throw new Error(result.message || 'Failed to save car');
+            }
+
+            showToast('✅ Success', result.message || 'Car added successfully');
+            // Limpiar formulario
+            plateInput.value = '';
+            colourInput.value = '';
+            ownerInput.value = '';
+            addressInput.value = '';
+            brandSelect.value = '';
+            modelSelect.innerHTML = '<option value="">Select a brand first</option>';
+            modelSelect.disabled = true;
+
+          } catch (e) {
+            showToast('❌ Error', e.message);
+          } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Car';
+          }
+        }
+
+        // 4. Asignar Eventos
+        brandSelect.addEventListener('change', () => loadCarModels(brandSelect.value));
+        saveButton.addEventListener('click', saveCar);
+
+        // 5. Carga inicial de marcas
+        loadCarBrands();
+        // --- ✅ FIN: NUEVA LÓGICA ---
       }
 
       // Tabs
       tabLogs.onclick = ()=>{ selectTab(tabLogs); openDrawer('Logs'); loadLogs(); };
       tabEvents.onclick=()=>{ selectTab(tabEvents); openDrawer('Events'); loadEvents(); };
-      tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('fines'); loadFines(); };
+      tabFines.onclick = ()=>{ selectTab(tabFines); openDrawer('Fines'); loadFines(); };
 
       tabSettings.onclick = ()=>{ selectTab(tabSettings); openDrawer('Settings'); renderSettings(); };
 

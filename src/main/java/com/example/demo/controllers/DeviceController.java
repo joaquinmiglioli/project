@@ -20,10 +20,10 @@ public class DeviceController {
 
     /**
      * JSON agrupado para el front:
-     *  - radars:          { id, lat, lng, status, limit, speedLimit }
-     *  - parkingCameras:  { id, lat, lng, status, toleranceTime, toleranceSec }
-     *  - cameras:         { id, lat, lng, status }
-     *  - semaphores:      { id, lat, lng, status, a, b, principalIsA }
+     * - radars:          { id, lat, lng, status, limit, speedLimit }
+     * - parkingCameras:  { id, lat, lng, status, toleranceTime, toleranceSec }
+     * - cameras:         { id, lat, lng, status }
+     * - semaphores:      { id, lat, lng, status, a, b, principalIsA }
      */
     @GetMapping
     public Map<String, Object> grouped() {
@@ -73,8 +73,7 @@ public class DeviceController {
                         "id", s.deviceId,
                         "lat", s.lat,
                         "lng", s.lng,
-                        "status", uiStatus(s.status),
-                        "address", s.address // 👈 agregado
+                        "status", uiStatus(s.status)
                 ))
                 .collect(Collectors.toList());
         out.put("cameras", cams);
