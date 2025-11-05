@@ -1,5 +1,5 @@
 // com/example/demo/controllers/EventsController.java
-package com.example.demo.controllers;
+/*package com.example.demo.controllers;
 
 import devices.SecurityWarning;
 import org.springframework.web.bind.annotation.*;
@@ -29,3 +29,4 @@ public class EventsController {
         return securityOps.log();
     }
 }
+*/

@@ -13,6 +13,19 @@ import java.util.List;
 
 public class FineDAO {
 
+    /** SQL base para seleccionar multas con toda la info del auto. */
+    private static final String SELECT_FINE_WITH_CAR_SQL = """
+        SELECT f.fineid, f.finedate, f.type, f.amount, f.scoringpoints, f.deviceid, f.photourl, f.barcode,
+               c.carid, c."licensePlate", c.owner, c.address, c.colour,
+               b.idbrand, b.name AS brandname,
+               m.modelid, m.name AS modelname
+        FROM fines f
+        JOIN cars c ON c.carid = f.carid
+        JOIN carmodels m ON m.modelid = c.carmodel
+        JOIN carbrands b ON b.idbrand = c.carbrand
+        """;
+
+
     /** Inserta la multa, setea el fineId y actualiza el barcode con el id ya generado. */
     public void insert(Fine fine) throws SQLException {
         String insertSql = """
@@ -53,15 +66,7 @@ public class FineDAO {
 
     /** Lista todas (con JOINs para reconstruir el Car completo). */
     public List<Fine> findAll(int limit) throws SQLException {
-        String sql = """
-            SELECT f.fineid, f.finedate, f.type, f.amount, f.scoringpoints, f.deviceid, f.photourl, f.barcode,
-                   c.carid, c."licensePlate", c.owner, c.address, c.colour,
-                   b.idbrand, b.name AS brandname,
-                   m.modelid, m.name AS modelname
-            FROM fines f
-            JOIN cars c ON c.carid = f.carid
-            JOIN carmodels m ON m.modelid = c.carmodel
-            JOIN carbrands b ON b.idbrand = c.carbrand
+        String sql = SELECT_FINE_WITH_CAR_SQL + """
             ORDER BY f.finedate DESC
             LIMIT ?
             """;
@@ -77,6 +82,29 @@ public class FineDAO {
         }
         return out;
     }
+
+    /**
+     * ✅ --- NUEVO MÉTODO PARA REPORTE 3 ---
+     * Busca multas por patente
+     */
+    public List<Fine> findByPlate(String plate) throws SQLException {
+        String sql = SELECT_FINE_WITH_CAR_SQL + """
+            WHERE c."licensePlate" = ?
+            ORDER BY f.finedate DESC
+            """;
+        List<Fine> out = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, plate.toUpperCase());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.add(mapFineWithCar(rs));
+                }
+            }
+        }
+        return out;
+    }
+
 
     /** Borra todo y reinicia el autonumérico a 1, compatible con SERIAL o IDENTITY. */
     public void deleteAll() throws SQLException {
