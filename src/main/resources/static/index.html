@@ -356,6 +356,8 @@
 
       const deviceLayers = new Map();
 
+      // ✅ --- INICIO: FUNCIONES AUXILIARES RESTAURADAS ---
+      // (Estas las borré por error en el paso anterior)
       function mkIcon(u){ return L.icon({iconUrl:u, iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28]}); }
       const ICONS = {
         radar:   { ok: mkIcon('/images/icons/RadarPhoto.png'),         err: mkIcon('/images/icons/RadarPhotoError.png') },
@@ -368,6 +370,8 @@
       function header(type,title){const cls=type==='radar'?'ph-radar':type==='parking'?'ph-parking':type==='camera'?'ph-camera':'ph-sema'; const e=type==='radar'?'⚡':type==='parking'?'🅿️':type==='camera'?'📸':'🚦'; return `<div class="popup-header ${cls}">${e} ${title}</div>`;}
       const row=(k,v)=>`<div class="popup-row"><span class="popup-k">${k}</span><span class="popup-v">${v}</span></div>`;
       const card=(t,id,rows)=>`<div class="popup-card">${header(t,id)}<div class="popup-body">${rows}</div></div>`;
+      // ✅ --- FIN: FUNCIONES AUXILIARES RESTAURADAS ---
+
 
       // --- Checkboxes globales ---
       const chkRadars = document.getElementById('chkRadars'),
@@ -412,7 +416,7 @@
         }catch(e){console.error(e);}
       }
 
-      // ✅ --- NUEVA FUNCIÓN ---
+      // --- NUEVA FUNCIÓN ---
       // Llama al endpoint de MODO INTERMITENTE que creamos en el DeviceController
       async function setIntermittentDevice(id){
         try{
@@ -425,14 +429,14 @@
       function repairBtn(item){
         const st = String(item.status||'').toUpperCase();
         if (['ERROR','YELLOW','INTERMITTENT','FAILURE'].includes(st)){
-          // ✅ TRADUCIDO
+          // TRADUCIDO
           // Este es el botón genérico para RADARES y CÁMARAS
           return `<div style="margin-top:8px;text-align:right"><button class="btn btn-ghost btn-rep" data-id="${item.id}">Repair</button></div>`;
         }
         return '';
       }
 
-      // ✅ --- NUEVA FUNCIÓN ---
+      // --- NUEVA FUNCIÓN ---
       // Botones específicos para SEMÁFOROS, como pediste.
       function semaphoreRepairBtns(item){
         const st = String(item.status||'').toUpperCase();
@@ -446,7 +450,7 @@
         return '';
       }
 
-      // ✅ --- ¡¡AQUÍ ESTÁ EL ARREGLO!! ---
+      // --- ¡AQUÍ ESTÁ EL ARREGLO DEL BUG DE CLICK! ---
       // Esta función ahora usa "Event Delegation".
       // Se añade UN listener al contenedor del popup.
       function attachRepairHandlers(ev, id){
@@ -459,8 +463,6 @@
             // e.target es el elemento exacto donde se hizo click (ej. el <button>)
 
             // 3. Verificamos si el click fue en uno de nuestros botones
-            //    Usamos .closest() para asegurarnos que funcione incluso si
-            //    el usuario hace click en el texto <span> dentro del botón.
 
             // Si el click fue en el botón "Repair" genérico
             if (e.target.closest('.btn-rep')) {
@@ -492,10 +494,9 @@
 
         (data.radars||[]).forEach(r=>{
           const ic=isErr(r.status)?ICONS.radar.err:ICONS.radar.ok;
-          // ✅ TRADUCIDO (textos del popup)
+          // TRADUCIDO (textos del popup)
           const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
 
-          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,r.id));
 
           (isErr(r.status) ? groups.radars_fail : groups.radars).addLayer(m);
@@ -503,10 +504,9 @@
         });
         (data.parkingCameras||[]).forEach(p=>{
           const ic=isErr(p.status)?ICONS.parking.err:ICONS.parking.ok;
-          // ✅ TRADUCIDO (textos del popup)
+          // TRADUCIDO (textos del popup)
           const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
 
-          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,p.id));
 
           (isErr(p.status) ? groups.parking_fail : groups.parking).addLayer(m);
@@ -514,10 +514,9 @@
         });
         (data.cameras||data.securityCameras||[]).forEach(c=>{
           const ic=isErr(c.status)?ICONS.camera.err:ICONS.camera.ok;
-          // ✅ TRADUCIDO (textos del popup)
+          // TRADUCIDO (textos del popup)
           const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
 
-          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,c.id));
 
           if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); }
@@ -527,7 +526,7 @@
 
         (data.semaphores||[]).forEach(s=>{
           const markerColor = isErr(s.status) ? colorFor('ERROR') : colorFor(s.a);
-          // ✅ TRADUCIDO (textos del popup)
+          // TRADUCIDO (textos del popup)
           const cm=L.circleMarker([s.lat,s.lng],{
             radius:7,
             fillOpacity:.95,
@@ -537,14 +536,14 @@
             deviceStatus: s.status
           })
 
-          // ✅ CAMBIO: Usar la nueva función de botones 'semaphoreRepairBtns' (sin cambios respecto a la vez anterior)
+          // CAMBIO: Usar la nueva función de botones 'semaphoreRepairBtns'
           .bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+semaphoreRepairBtns(s)));
 
-          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
+          // CAMBIO: Usar el nuevo handler
           cm.on('popupopen',ev=>attachRepairHandlers(ev,s.id));
 
           (isErr(s.status) ? groups.semaphores_fail : groups.semaphores).addLayer(cm);
-          deviceLayers.set(s.id,cm); ftrs.push(m);
+          deviceLayers.set(s.id,cm); ftrs.push(cm);
         });
 
         if(ftrs.length){const g=L.featureGroup(ftrs); map.fitBounds(g.getBounds().pad(.15));}
@@ -561,13 +560,14 @@
         if(m && m.getPopup()) {
             const currentStatus = m.options.deviceStatus || 'READY';
 
-            // ✅ CAMBIO: Determinar qué botones mostrar según el estado (sin cambios respecto a la vez anterior)
+            // CAMBIO: Determinar qué botones mostrar según el estado
             const item = {id, status:currentStatus};
+            // (Esta lógica es para mostrar los botones correctos cuando el popup se refresca)
             const buttons = (isErr(currentStatus) || currentStatus === 'YELLOW')
                               ? semaphoreRepairBtns(item)
                               : repairBtn(item); // <- (que devolverá '')
 
-            // ✅ TRADUCIDO (textos del popup)
+            // TRADUCIDO (textos del popup)
             // Esta línea es la que "borraba" los listeners.
             // Gracias al nuevo attachRepairHandlers (con delegación), esto ya no es un problema.
             m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?') + buttons));
