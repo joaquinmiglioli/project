@@ -26,6 +26,11 @@
         .switch input:checked + .switch-slider::before{transform: translateX(18px);}
         .switch input:focus-visible + .switch-slider{outline:2px solid #2563eb; outline-offset:2px;}
 
+        /* --- ✅ NUEVO ESTILO PARA EL SWITCH DE FALLAS --- */
+        #chkFails + .switch-slider { background: #fca5a5; } /* Color rojo claro cuando está apagado */
+        #chkFails:checked + .switch-slider { background: #b91c1c !important; } /* Color rojo oscuro cuando está encendido */
+        /* --- FIN NUEVO ESTILO --- */
+
         /* Header */
         .appbar{position:absolute; top:0; left:0; right:0; height:64px; background:#111827; color:#fff; z-index:950; display:flex; align-items:center; gap:14px; padding:0 16px; box-shadow: 0 6px 18px rgba(0,0,0,.35);}
         .brand{font-weight:900; letter-spacing:.5px;}
@@ -121,6 +126,14 @@
         <div class="devices-option"><label for="chkParking">Parking Cameras</label><label class="switch"><input type="checkbox" id="chkParking" checked><span class="switch-slider"></span></label></div>
         <div class="devices-option"><label for="chkSecurity">Cameras</label><label class="switch"><input type="checkbox" id="chkSecurity" checked><span class="switch-slider"></span></label></div>
         <div class="devices-option"><label for="chkSemaphores">Semaphores</label><label class="switch"><input type="checkbox" id="chkSemaphores" checked><span class="switch-slider"></span></label></div>
+
+        <div class="devices-option" style="border-top:1px solid #e5e7eb; margin-top:4px; padding-top:8px;">
+            <label for="chkFails" style="color:#b91c1c; font-weight:700;">Show Fails Only</label>
+            <label class="switch">
+                <input type="checkbox" id="chkFails">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
     </div>
 </div>
 
@@ -163,7 +176,20 @@
       const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 15);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '© OpenStreetMap, © CARTO' }).addTo(map);
 
-      const groups = { radars:L.layerGroup().addTo(map), parking:L.layerGroup().addTo(map), security:L.layerGroup().addTo(map), semaphores:L.layerGroup().addTo(map) };
+      // --- ✅ INICIO: JAVASCRIPT MODIFICADO ---
+      // Se crean grupos duplicados: uno para dispositivos OK y otro para los fallados
+      const groups = {
+        radars: L.layerGroup(),
+        parking: L.layerGroup(),
+        security: L.layerGroup(),
+        semaphores: L.layerGroup(),
+        radars_fail: L.layerGroup(),
+        parking_fail: L.layerGroup(),
+        security_fail: L.layerGroup(),
+        semaphores_fail: L.layerGroup()
+      };
+      // --- ✅ FIN: JAVASCRIPT MODIFICADO ---
+
       const deviceLayers = new Map();
 
       function mkIcon(u){ return L.icon({iconUrl:u, iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28]}); }
@@ -179,20 +205,55 @@
       const row=(k,v)=>`<div class="popup-row"><span class="popup-k">${k}</span><span class="popup-v">${v}</span></div>`;
       const card=(t,id,rows)=>`<div class="popup-card">${header(t,id)}<div class="popup-body">${rows}</div></div>`;
 
-      const chkRadars=document.getElementById('chkRadars'), chkParking=document.getElementById('chkParking'), chkSecurity=document.getElementById('chkSecurity'), chkSemaphores=document.getElementById('chkSemaphores');
-      function applyVisibility(){
-        (chkRadars.checked?groups.radars.addTo(map):map.removeLayer(groups.radars));
-        (chkParking.checked?groups.parking.addTo(map):map.removeLayer(groups.parking));
-        (chkSecurity.checked?groups.security.addTo(map):map.removeLayer(groups.security));
-        (chkSemaphores.checked?groups.semaphores.addTo(map):map.removeLayer(groups.semaphores));
+      // --- ✅ INICIO: JAVASCRIPT MODIFICADO ---
+      // Se definen los checkboxes fuera de la función para que sean globales
+      const chkRadars = document.getElementById('chkRadars'),
+            chkParking = document.getElementById('chkParking'),
+            chkSecurity = document.getElementById('chkSecurity'),
+            chkSemaphores = document.getElementById('chkSemaphores'),
+            chkFails = document.getElementById('chkFails'); // El nuevo checkbox
+
+      // La función de visibilidad ahora decide qué grupos (normales o fallados) mostrar
+      function applyVisibility() {
+        const showFailsOnly = chkFails.checked;
+
+        // Función helper para no repetir lógica
+        const setVisibility = (normalGroup, failGroup, isChecked) => {
+            // Siempre quitar ambos grupos primero
+            map.removeLayer(normalGroup);
+            map.removeLayer(failGroup);
+
+            if (isChecked) {
+                if (showFailsOnly) {
+                    // Si "Show Fails Only" está activo, solo añadir el grupo de fallados
+                    map.addLayer(failGroup);
+                } else {
+                    // Si no, añadir ambos grupos (normales Y fallados)
+                    map.addLayer(normalGroup);
+                    map.addLayer(failGroup);
+                }
+            }
+            // Si isChecked es false, ambos grupos permanecen quitados
+        };
+
+        setVisibility(groups.radars, groups.radars_fail, chkRadars.checked);
+        setVisibility(groups.parking, groups.parking_fail, chkParking.checked);
+        setVisibility(groups.security, groups.security_fail, chkSecurity.checked);
+        setVisibility(groups.semaphores, groups.semaphores_fail, chkSemaphores.checked);
       }
-      chkRadars.onchange=applyVisibility; chkParking.onchange=applyVisibility; chkSecurity.onchange=applyVisibility; chkSemaphores.onchange=applyVisibility;
+      // Asignar el evento a TODOS los checkboxes
+      chkRadars.onchange = applyVisibility;
+      chkParking.onchange = applyVisibility;
+      chkSecurity.onchange = applyVisibility;
+      chkSemaphores.onchange = applyVisibility;
+      chkFails.onchange = applyVisibility; // El nuevo checkbox también dispara la función
+      // --- ✅ FIN: JAVASCRIPT MODIFICADO ---
 
       async function repairDevice(id){
         try{
           let res = await fetch(`/api/devices/${encodeURIComponent(id)}/repair`);
           if(!res.ok) res = await fetch(`/api/devices/${encodeURIComponent(id)}/status?action=REPAIR`, {method:'POST'});
-          await loadDevices();
+          await loadDevices(); // Recargar todos los dispositivos para que cambien de grupo
         }catch(e){console.error(e);}
       }
       function repairBtn(item){
@@ -207,43 +268,82 @@
       }
 
       function addDevices(data){
-        groups.radars.clearLayers(); groups.parking.clearLayers(); groups.security.clearLayers(); groups.semaphores.clearLayers(); deviceLayers.clear();
+        // Limpiar todos los grupos, incluyendo los nuevos de fallas
+        Object.values(groups).forEach(g => g.clearLayers());
+        deviceLayers.clear();
         const ftrs=[];
 
         (data.radars||[]).forEach(r=>{
           const ic=isErr(r.status)?ICONS.radar.err:ICONS.radar.ok;
-          // ✅ LÍNEA MODIFICADA (se quitó Address)
           const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
-          m.on('popupopen',ev=>attachRepair(ev,r.id)); m.addTo(groups.radars); deviceLayers.set(r.id,m); ftrs.push(m);
+          m.on('popupopen',ev=>attachRepair(ev,r.id));
+          (isErr(r.status) ? groups.radars_fail : groups.radars).addLayer(m);
+          deviceLayers.set(r.id,m); ftrs.push(m);
         });
         (data.parkingCameras||[]).forEach(p=>{
           const ic=isErr(p.status)?ICONS.parking.err:ICONS.parking.ok;
-          // ✅ LÍNEA MODIFICADA (se quitó Address)
           const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
-          m.on('popupopen',ev=>attachRepair(ev,p.id)); m.addTo(groups.parking); deviceLayers.set(p.id,m); ftrs.push(m);
+          m.on('popupopen',ev=>attachRepair(ev,p.id));
+          (isErr(p.status) ? groups.parking_fail : groups.parking).addLayer(m);
+          deviceLayers.set(p.id,m); ftrs.push(m);
         });
         (data.cameras||data.securityCameras||[]).forEach(c=>{
           const ic=isErr(c.status)?ICONS.camera.err:ICONS.camera.ok;
-          // ✅ LÍNEA MODIFICADA (se quitó Address)
           const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
           m.on('popupopen',ev=>attachRepair(ev,c.id));
-          if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); } // overlay solo si no está en error
-          m.addTo(groups.security); deviceLayers.set(c.id,m); ftrs.push(m);
+          if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); }
+          (isErr(c.status) ? groups.security_fail : groups.security).addLayer(m);
+          deviceLayers.set(c.id,m); ftrs.push(m);
         });
+
+        // --- ✅ INICIO DE LA CORRECCIÓN EN SEMÁFOROS ---
         (data.semaphores||[]).forEach(s=>{
-          const cm=L.circleMarker([s.lat,s.lng],{radius:7,fillOpacity:.95,color:'#000',weight:1,fillColor:colorFor(s.status)}).bindPopup(card('sema',s.id, row('Status A',s.statusA||s.status||'?')+row('Status B',s.statusB||'?')+repairBtn(s)));
-          cm.on('popupopen',ev=>attachRepair(ev,s.id)); cm.addTo(groups.semaphores); deviceLayers.set(s.id,cm); ftrs.push(cm);
+          // Lógica de color corregida:
+          // 1. Determinar el color: si el status del dispositivo es ERROR, usar color 'ERROR' (violeta).
+          // 2. Si no, usar el color de la luz principal (s.a).
+          const markerColor = isErr(s.status) ? colorFor('ERROR') : colorFor(s.a);
+
+          const cm=L.circleMarker([s.lat,s.lng],{
+            radius:7,
+            fillOpacity:.95,
+            color:'#000',
+            weight:1,
+            fillColor: markerColor,
+            deviceStatus: s.status // <-- Guardamos el estado del dispositivo aquí
+          }).bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+repairBtn(s)));
+
+          cm.on('popupopen',ev=>attachRepair(ev,s.id));
+          // Añadir al grupo correcto (normal o fallado) basado en el estado del dispositivo
+          (isErr(s.status) ? groups.semaphores_fail : groups.semaphores).addLayer(cm);
+          deviceLayers.set(s.id,cm); ftrs.push(cm);
         });
+        // --- ✅ FIN DE LA CORRECCIÓN ---
 
         if(ftrs.length){const g=L.featureGroup(ftrs); map.fitBounds(g.getBounds().pad(.15));}
-        applyVisibility();
+        applyVisibility(); // Aplicar la visibilidad inicial
       }
       async function loadDevices(){ try{ const r=await fetch('/api/devices',{cache:'no-store'}); if(!r.ok) throw 0; addDevices(await r.json()); }catch(e){ console.warn('Could not load /api/devices',e); } }
-      loadDevices();
+      loadDevices(); // Carga inicial
 
-      window.updateSemaphoreStatus=(id,a,b)=>{ const m=deviceLayers.get(id); if(m&&m.setStyle){ m.setStyle({fillColor:colorFor(a)}); if(m.getPopup()) m.setPopupContent(card('sema',id, row('Status A',a||'?')+row('Status B',b||'?')+repairBtn({id, status:a}))); }};
+      // Esta función actualiza el color de la LUZ del semáforo, no su estado de FALLA.
+      // El estado de falla (círculo violeta) solo se actualiza con loadDevices().
+      window.updateSemaphoreStatus=(id,a,b)=>{
+        const m=deviceLayers.get(id);
+
+        // 1. Actualizar el color de la luz (SOLO si el dispositivo no está en ERROR)
+        //    Lee el 'deviceStatus' que guardamos en el marker.
+        if (m && m.setStyle && !isErr(m.options.deviceStatus)) {
+            m.setStyle({fillColor: colorFor(a)});
+        }
+
+        // 2. Actualizar el popup (siempre)
+        if(m && m.getPopup()) {
+            const currentStatus = m.options.deviceStatus || 'READY'; // Usar el status guardado
+            m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?')+repairBtn({id, status:currentStatus})));
+        }
+      };
       async function updateTrafficLights(){ try{ const r=await fetch('/api/trafficlights'); if(!r.ok) throw 0; (await r.json()).forEach(tl=>window.updateSemaphoreStatus(tl.id, tl.a, tl.b)); }catch(e){} }
-      setInterval(updateTrafficLights, 800);
+      setInterval(updateTrafficLights, 800); // Esto sigue actualizando el popup de los semáforos OK
 
       function showToast(title,sub){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast';t.innerHTML=`<div class="title">${title}</div><div class="subtitle">${sub}</div>`;c.appendChild(t);const rm=()=>t.remove();t.addEventListener('click',rm);setTimeout(rm,4000);}
       async function checkForFines(){ try{ const r=await fetch('/api/lastFine',{cache:'no-store'}); if(!r.ok) return; const data=await r.json?.()??{}; if(!data || Object.keys(data).length===0){ const text=await r.text(); if(text&&text.trim()!==""){ showToast("🚨 New fine generated","Violation PDF created."); await fetch('/api/clearFine'); } return;} if(data.fineNumber||data.plate||data.type){ const sub=`Nº ${data.fineNumber??'-'} • ${data.type??'Violation'} • ${data.plate??''}`; showToast("🚨 New fine generated",sub); await fetch('/api/clearFine'); } }catch(e){} }
@@ -388,7 +488,7 @@
       }
 
       // ✅ ==========================================================
-      // ✅ SECCIÓN 'renderSettings' MODIFICADA
+      // ✅ SECCIÓN 'renderSettings' MODIFICADA (tal como estaba antes)
       // ✅ ==========================================================
       function renderSettings(){
         const html = `
@@ -462,7 +562,7 @@
           }
         };
 
-        // ✅ --- INICIO: NUEVA LÓGICA PARA EL FORMULARIO DE AUTOS ---
+        // ✅ --- INICIO: LÓGICA PARA EL FORMULARIO DE AUTOS ---
         const brandSelect = document.getElementById('carBrandSelect');
         const modelSelect = document.getElementById('carModelSelect');
         const plateInput = document.getElementById('carPlateInput');
@@ -574,7 +674,7 @@
 
         // 5. Carga inicial de marcas
         loadCarBrands();
-        // --- ✅ FIN: NUEVA LÓGICA ---
+        // --- ✅ FIN: LÓGICA ---
       }
 
       // Tabs

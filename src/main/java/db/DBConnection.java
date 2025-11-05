@@ -9,7 +9,7 @@ public class DBConnection {
    //Ajusten la contraseña a su propia base de datos
     private static final String JDBC_URL  = "jdbc:postgresql://localhost:5432/monitoringcenter";
     private static final String USERNAME  = "postgres";
-    private static final String PASSWORD  = "fasta";
+    private static final String PASSWORD  = "1234";
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);

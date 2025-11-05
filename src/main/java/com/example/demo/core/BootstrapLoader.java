@@ -64,38 +64,47 @@ public final class BootstrapLoader {
                     // principalIsA desde semA.main (default true si no viene)
                     boolean principalIsA = booleanOr(n.path("semA"), "main", true);
 
-                    // Snapshot base
-                    CentralState.DeviceSnapshot snap = CentralState.DeviceSnapshot.trafficLight(id, addr, principalIsA);
-                    snap.lat = doubleOr(n, "lat", "latitude", "y");
-                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
-                    // DeviceStatus: si el objeto semáforo trae "status": "ERROR" => FAILURE
-                    snap.status = mapDeviceStatus(textOr(n, "status"));
+                    // --- ✅ LÓGICA CORREGIDA ---
 
-                    state.devicesById.put(id, snap);
-
-                    // Estado de luces A/B desde semA.status y semB.status
+                    // 1. Leer el estado de las LUCES primero
                     TrafficLightStatus a = mapLight(textOr(n.path("semA"), "status"));
                     TrafficLightStatus b = mapLight(textOr(n.path("semB"), "status"));
 
-                    // Si no vienen, por defecto A=GREEN B=RED (o lo que prefieras)
+                    // Si no vienen, por defecto A=GREEN B=RED
                     if (a == null) a = TrafficLightStatus.GREEN;
                     if (b == null) b = TrafficLightStatus.RED;
 
-                    // Guardar TLState y modo
-                    state.tlMode.put(id, snap.status == DeviceStatus.FAILURE
+                    // 2. Determinar el estado del DISPOSITIVO (usando la función corregida)
+                    // (Esto captura la Regla 1: "status": "ERROR" en el JSON)
+                    DeviceStatus deviceStatus = mapDeviceStatus(textOr(n, "status"));
+
+                    // 3. Aplicar Regla 2: Sobrescribir a FAILURE si ambas luces son VERDES
+                    // (como dice la "Tabla de Decisión" del PDF)
+                    if (a == TrafficLightStatus.GREEN && b == TrafficLightStatus.GREEN) {
+                        deviceStatus = DeviceStatus.FAILURE;
+                    }
+
+                    // 4. Crear el snapshot con el estado de dispositivo VALIDADO
+                    CentralState.DeviceSnapshot snap = CentralState.DeviceSnapshot.trafficLight(id, addr, principalIsA);
+                    snap.lat = doubleOr(n, "lat", "latitude", "y");
+                    snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
+                    snap.status = deviceStatus; // <-- Se usa el estado final validado
+
+                    state.devicesById.put(id, snap);
+
+                    // 5. Guardar el estado de las LUCES (A y B)
+                    state.tlMode.put(id, deviceStatus == DeviceStatus.FAILURE
                             ? CentralState.TLMode.FLASHING
                             : CentralState.TLMode.NORMAL);
 
-                    // Si principalIsA=false, igual guardamos A/B tal cual;
-                    // el servicio de ciclo invierte visualmente según principalIsA cuando corresponda.
                     state.tlStates.put(id, new CentralState.TLState(a, b, principalIsA));
+                    // --- ✅ FIN DE LA CORRECCIÓN ---
 
                 } catch (Exception e) {
                     System.err.println("Warning: no pude parsear un semaphoreController: " + e.getMessage());
                 }
             }
         }
-
         // ---------------------------- RADARES ----------------------------
         if (root.has("radars") && root.get("radars").isArray()) {
             for (var n : root.withArray("radars")) {
@@ -223,9 +232,13 @@ public final class BootstrapLoader {
     private static DeviceStatus mapDeviceStatus(String s) {
         if (s == null) return DeviceStatus.NORMAL;
         return switch (s.toUpperCase()) {
-            case "READY", "NORMAL", "OK", "GREEN" -> DeviceStatus.NORMAL;
-            case "ERROR", "FAIL", "FAILURE", "DOWN", "RED" -> DeviceStatus.FAILURE;
-            case "INTERMITTENT", "WARN", "YELLOW" -> DeviceStatus.INTERMITTENT;
+
+            case "READY", "NORMAL", "OK", "GREEN", "RED", "YELLOW" -> DeviceStatus.NORMAL;
+
+            case "ERROR", "FAIL", "FAILURE", "DOWN" -> DeviceStatus.FAILURE;
+
+            case "INTERMITTENT", "WARN" -> DeviceStatus.INTERMITTENT;
+
             default -> DeviceStatus.NORMAL;
         };
     }
