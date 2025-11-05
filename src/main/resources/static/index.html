@@ -446,22 +446,43 @@
         return '';
       }
 
-      // ✅ --- FUNCIÓN MODIFICADA ---
-      // Renombramos 'attachRepair' a 'attachRepairHandlers' para manejar los 3 tipos de botones
+      // ✅ --- ¡¡AQUÍ ESTÁ EL ARREGLO!! ---
+      // Esta función ahora usa "Event Delegation".
+      // Se añade UN listener al contenedor del popup.
       function attachRepairHandlers(ev, id){
-        const popup = ev.popup.getElement();
+        // 1. Obtenemos el contenedor principal del popup
+        const popupContainer = ev.popup.getElement();
 
-        // 1. Botón de reparación genérico (para Radar, Cámaras)
-        const b_rep = popup.querySelector('.btn-rep');
-        if(b_rep) b_rep.addEventListener('click',()=>repairDevice(id));
+        // 2. Añadimos UN SOLO listener de click al CONTENEDOR
+        // Este listener sobrevive a los reemplazos de HTML internos.
+        popupContainer.addEventListener('click', (e) => {
+            // e.target es el elemento exacto donde se hizo click (ej. el <button>)
 
-        // 2. Botones de Semáforo (Repair Normal)
-        const b_norm = popup.querySelector('.btn-rep-normal');
-        if(b_norm) b_norm.addEventListener('click',()=>repairDevice(id));
+            // 3. Verificamos si el click fue en uno de nuestros botones
+            //    Usamos .closest() para asegurarnos que funcione incluso si
+            //    el usuario hace click en el texto <span> dentro del botón.
 
-        // 3. Botones de Semáforo (Set Intermittent)
-        const b_int = popup.querySelector('.btn-rep-interm');
-        if(b_int) b_int.addEventListener('click',()=>setIntermittentDevice(id));
+            // Si el click fue en el botón "Repair" genérico
+            if (e.target.closest('.btn-rep')) {
+              e.stopPropagation(); // Detenemos el evento para que Leaflet no lo cierre
+              repairDevice(id);    // Llamamos a la función
+              return;
+            }
+
+            // Si el click fue en el botón "Repair (Normal)"
+            if (e.target.closest('.btn-rep-normal')) {
+              e.stopPropagation();
+              repairDevice(id);
+              return;
+            }
+
+            // Si el click fue en el botón "Set Intermittent"
+            if (e.target.closest('.btn-rep-interm')) {
+              e.stopPropagation();
+              setIntermittentDevice(id);
+              return;
+            }
+        });
       }
 
       function addDevices(data){
@@ -474,7 +495,7 @@
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([r.lat,r.lng],{icon:ic}).bindPopup(card('radar',r.id, row('Status',r.status||'?')+row('Speed limit',(r.speedLimit??r.limit??'-')+' km/h')+repairBtn(r)));
 
-          // ✅ CAMBIO: Usar el nuevo handler
+          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,r.id));
 
           (isErr(r.status) ? groups.radars_fail : groups.radars).addLayer(m);
@@ -485,7 +506,7 @@
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([p.lat,p.lng],{icon:ic}).bindPopup(card('parking',p.id, row('Status',p.status||'?')+row('Tolerance',(p.toleranceTime??p.toleranceSec??0)+' s')+repairBtn(p)));
 
-          // ✅ CAMBIO: Usar el nuevo handler
+          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,p.id));
 
           (isErr(p.status) ? groups.parking_fail : groups.parking).addLayer(m);
@@ -496,7 +517,7 @@
           // ✅ TRADUCIDO (textos del popup)
           const m=L.marker([c.lat,c.lng],{icon:ic}).bindPopup(card('camera',c.id, row('Status',c.status||'?')+repairBtn(c)));
 
-          // ✅ CAMBIO: Usar el nuevo handler
+          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           m.on('popupopen',ev=>attachRepairHandlers(ev,c.id));
 
           if(!isErr(c.status)){ m.on('click',()=>setTimeout(()=>openSecurityOverlay(c.id),50)); }
@@ -516,14 +537,14 @@
             deviceStatus: s.status
           })
 
-          // ✅ CAMBIO: Usar la nueva función de botones 'semaphoreRepairBtns'
+          // ✅ CAMBIO: Usar la nueva función de botones 'semaphoreRepairBtns' (sin cambios respecto a la vez anterior)
           .bindPopup(card('sema',s.id, row('Dev. Status', s.status || '?') + row('Light A',s.a||'?')+row('Light B',s.b||'?')+semaphoreRepairBtns(s)));
 
-          // ✅ CAMBIO: Usar el nuevo handler
+          // ✅ CAMBIO: Usar el nuevo handler (sin cambios respecto a la vez anterior)
           cm.on('popupopen',ev=>attachRepairHandlers(ev,s.id));
 
           (isErr(s.status) ? groups.semaphores_fail : groups.semaphores).addLayer(cm);
-          deviceLayers.set(s.id,cm); ftrs.push(cm);
+          deviceLayers.set(s.id,cm); ftrs.push(m);
         });
 
         if(ftrs.length){const g=L.featureGroup(ftrs); map.fitBounds(g.getBounds().pad(.15));}
@@ -540,13 +561,15 @@
         if(m && m.getPopup()) {
             const currentStatus = m.options.deviceStatus || 'READY';
 
-            // ✅ CAMBIO: Determinar qué botones mostrar según el estado
+            // ✅ CAMBIO: Determinar qué botones mostrar según el estado (sin cambios respecto a la vez anterior)
             const item = {id, status:currentStatus};
             const buttons = (isErr(currentStatus) || currentStatus === 'YELLOW')
                               ? semaphoreRepairBtns(item)
                               : repairBtn(item); // <- (que devolverá '')
 
             // ✅ TRADUCIDO (textos del popup)
+            // Esta línea es la que "borraba" los listeners.
+            // Gracias al nuevo attachRepairHandlers (con delegación), esto ya no es un problema.
             m.setPopupContent(card('sema',id, row('Dev. Status', currentStatus) + row('Light A',a||'?')+row('Light B',b||'?') + buttons));
         }
       };
@@ -798,8 +821,8 @@
                     <span class="pill fine-card-plate">${it.car?.plate ?? '-'}</span>
                   </div>
                   <div class="fine-card-body">
-                    <span>${fmtCurrency(it.amount)}</span>
-                    <span style="font-size: 12px;">${fmtTs(it.fineDate)}</span>
+                    <span>${fmtCurrency(f.amount)}</span>
+                    <span style="font-size: 12px;">${fmtTs(f.fineDate)}</span>
                   </div>
                 </div>`;
             }
