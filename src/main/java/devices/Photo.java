@@ -1,4 +1,3 @@
-// devices/Photo.java
 package devices;
 
 import java.io.IOException;
@@ -7,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-/** Representa una foto (guardamos sólo el filename). */
+//Representa una foto (guardamos sólo el filename).
 public class Photo {
     private String path; // ej: "FinesPhoto2.jpg"
 
@@ -17,10 +16,9 @@ public class Photo {
     public String getPath() { return path; }
     public void setPath(String path) { this.path = path; }
 
-    /**
-     * Devuelve un filename aleatorio desde src/main/resources/static/images/fines.
-     * Si no hay imágenes, devuelve "fallback.png".
-     */
+    /*Devuelve un filename aleatorio desde src/main/resources/static/images/fines.
+      Si no hay imágenes, devuelve "fallback.png".*/
+
     public static String randomFinePhotoFilename() {
         try {
             Path dir = Paths.get("src/main/resources/static/images/fines");

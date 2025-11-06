@@ -1,4 +1,3 @@
-// devices/TrafficLight.java
 package devices;
 
 public class TrafficLight {

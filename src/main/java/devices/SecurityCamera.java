@@ -1,4 +1,3 @@
-// devices/SecurityCamera.java
 package devices;
 
 public class SecurityCamera extends Device {
