@@ -15,13 +15,21 @@ import fines.SimpleFineIssuer;
 
 import db.CarDAO;
 import db.FineDAO;
-import devices.IMaintenanceContext; // 👈 RESTAURADO
+import devices.IMaintenanceContext;
 
 import java.nio.file.Path;
 
-public final class AppContext implements IMaintenanceContext { // 👈 RESTAURADO
 
-    // ... (campos sin cambios)
+/*
+Constructor: Inicializa todos los servicios y componentes principales: carga el estado (StatePersistenceService),
+crea los objetos de dispositivo (DeviceFactory), inicializa los DAOs de la base de datos, y arranca los simuladores
+(ViolationSimulator, DeviceFailureSimulator) y el ciclo de semáforos (TrafficLightCycleService).
+Implementa IMaintenanceContext: Actúa como el "contexto" para el polimorfismo de mantenimiento, proveyendo los métodos
+pauseTrafficLight y resumeTrafficLight que los dispositivos pueden llamar.
+*/
+
+public final class AppContext implements IMaintenanceContext {
+
     public final StatePersistenceService persistence;
     public final CentralState state;
     public final DeviceCatalog deviceCatalog;
@@ -39,14 +47,14 @@ public final class AppContext implements IMaintenanceContext { // 👈 RESTAURAD
 
 
     public AppContext() {
-        // ... (Pasos 1-4 sin cambios) ...
+
         // 1) Estado
         this.persistence = new StatePersistenceService(Path.of("state.bin"));
         this.state       = persistence.loadOrBootstrap(Path.of("src/main/resources/devices.json"));
         // 2) Objetos de dispositivos
         this.deviceCatalog = DeviceFactory.buildFrom(state.devicesById);
         this.snapshotSync  = new SnapshotSync(state);
-        // 3) Servicios de dominio (DB)
+        // 3) (DB)
         var carDAO       = new CarDAO();
         this.carService  = new CarService(carDAO);
         this.fineDAO     = new FineDAO();
@@ -55,7 +63,7 @@ public final class AppContext implements IMaintenanceContext { // 👈 RESTAURAD
         this.violationService         = ViolationService.fromSeed(state.violations);
         this.trafficLightCycleService = new TrafficLightCycleService(state);
         this.trafficLightCycleService.stopAll();
-        // ... (grupos indep y riv sin cambios) ...
+        //  (grupos indep y riv )
         java.util.List<String> indep = java.util.stream.IntStream.rangeClosed(1, 27).mapToObj(i -> "Semaphore " + i).toList();
         java.util.List<String> riv = java.util.stream.IntStream.rangeClosed(28, 31).mapToObj(i -> "Semaphore " + i).toList();
         trafficLightCycleService.startCascade("Independencia", indep, 2);
@@ -68,20 +76,19 @@ public final class AppContext implements IMaintenanceContext { // 👈 RESTAURAD
         this.violationCoordinator = new ViolationCoordinator(violationService, fineIssuer);
         this.violationCoordinator.start();
 
-        // 6) 👈 MODIFICADO: Constructor más simple
         this.deviceFailureSimulator = new DeviceFailureSimulator(
                 this.deviceCatalog,
-                this.snapshotSync    // Ya no se pasa 'this' (el contexto)
+                this.snapshotSync
         );
         this.deviceFailureSimulator.start();
     }
 
-    /** Deshabilita el guardado al salir (usado por el Reset) */
+    /* Deshabilita el guardado al salir (usado por el Reset) */
     public void disableSaveOnExit() {
         this.allowSaveOnExit = false;
     }
 
-    /** saveOnExit (sin cambios) */
+    /* saveOnExit (sin cambios) */
     public void saveOnExit() {
         if (!allowSaveOnExit) {
             System.out.println("🛑 Skipping save on exit (Reset requested).");
@@ -98,7 +105,7 @@ public final class AppContext implements IMaintenanceContext { // 👈 RESTAURAD
         persistence.save(state);
     }
 
-    // --- Implementación de IMaintenanceContext (RESTAURADA) ---
+    // Implementación de IMaintenanceContext
 
     @Override
     public void pauseTrafficLight(String deviceId) {

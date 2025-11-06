@@ -5,6 +5,8 @@ import com.example.demo.services.ViolationService;
 import java.util.*;
 import java.util.concurrent.*;
 
+// hilo en segundo plano que simula la aparicion de infracciones
+
 public class ViolationSimulator {
 
     private final CentralState state;
@@ -26,10 +28,9 @@ public class ViolationSimulator {
 
     private void tick() {
         try {
-            // elegimos tipo 0..2 (sin SecurityCamera)
             int t = r.nextInt(3);
             List<CentralState.DeviceSnapshot> pool = state.devicesById.values().stream()
-                    .filter(s -> s.status != devices.DeviceStatus.FAILURE) // si está fallado, no “funciona”
+                    .filter(s -> s.status != devices.DeviceStatus.FAILURE)
                     .filter(s -> switch (t) {
                         case 0 -> "Radar".equals(s.type);
                         case 1 -> "ParkingCamera".equals(s.type);
@@ -40,17 +41,17 @@ public class ViolationSimulator {
             if (!pool.isEmpty()) {
                 CentralState.DeviceSnapshot d = pool.get(r.nextInt(pool.size()));
                 switch (t) {
-                    case 0 -> { // Radar
+                    case 0 -> {
                         int limit = Optional.ofNullable(d.speedLimit).orElse(80);
                         int speed = limit + 10 + r.nextInt(51);
                         vs.recordSpeeding(d.deviceId, "XXX000", speed, limit);
                     }
-                    case 1 -> { // Parking
+                    case 1 -> {
                         int tol = Optional.ofNullable(d.toleranceSec).orElse(300);
                         int stay = tol + 60 + r.nextInt(600);
                         vs.recordIllegalParking(d.deviceId, "YYY111", stay, tol);
                     }
-                    default -> { // Red light
+                    default -> {
                         String dir = r.nextBoolean() ? "N-S" : "E-W";
                         vs.recordRedLight(d.deviceId, "ZZZ222", dir);
                     }

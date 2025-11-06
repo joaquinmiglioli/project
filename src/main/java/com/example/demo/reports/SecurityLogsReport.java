@@ -9,37 +9,29 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * DTO para el Reporte de Avisos de Seguridad (Reporte 4).
- *
- */
+//encapsula los datos para el filtro de Avisos de Seguridad
+
 public record SecurityLogsReport(
         List<SecurityWarning> warnings,
         Map<ServiceType, Long> counts,
         Map<ServiceType, Double> percentages,
         long totalCount
 ) {
-    /**
-     * Constructor estático que calcula los totales y porcentajes.
-     *
-     */
     public static SecurityLogsReport create(List<SecurityWarning> filteredWarnings) {
         long totalCount = filteredWarnings.size();
 
-        // 1. Contar los avisos por tipo
         Map<ServiceType, Long> counts = filteredWarnings.stream()
                 .collect(Collectors.groupingBy(
                         SecurityWarning::getServiceType,
                         Collectors.counting()
                 ));
 
-        // 2. Asegurar que todos los servicios estén presentes (incluso con 0)
-        //
+
         for (ServiceType type : ServiceType.values()) {
             counts.putIfAbsent(type, 0L);
         }
 
-        // 3. Calcular porcentajes
+        // calcula porcentajes
         Map<ServiceType, Double> percentages = counts.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,

@@ -5,10 +5,8 @@ import fines.Fine;
 
 import java.util.List;
 
-/**
- * DTO para el Reporte de Eventos por Dispositivo (Reporte 5).
- *
- */
+// reporte para filtrar Eventos por Dispositivo
+
 public record DeviceEventsReport(
         String deviceId,
         List<Fine> fines,
