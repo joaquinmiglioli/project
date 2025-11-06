@@ -1,28 +1,35 @@
 package fines;
 
+
 import cars.Car;
 import cars.CarService;
 import db.FineDAO;
 
+
+import java.sql.SQLException;
+import com.example.demo.exceptions.DatabaseOperationException;
+
+
 import java.time.Instant;
 import java.util.Map;
 
+
 public class SimpleFineIssuer implements FineIssuer {
+
 
     private final CarService carService;
     private final FineDAO fineDao;
 
-    // Inyectá ambos por constructor (desde AppContext / donde armes los servicios)
+
     public SimpleFineIssuer(CarService carService, FineDAO fineDao) {
         this.carService = carService;
         this.fineDao = fineDao;
     }
 
-    @Override
-    public Fine issue(FineType type, String deviceId, String photoUrl, Map<String, Object> meta) {
-        Car car = carService.randomCar(); // auto random desde DB
 
-        // construir subclase
+    @Override
+    public Fine issue(FineType type, String deviceId, String photoUrl, Map<String, Object> meta) { //recibe un FineType y segun esto, utiliza
+        Car car = carService.randomCar();                                                          // polimorficamente el metodo compute()
         Fine fine;
         Instant now = Instant.now();
         switch (type) {
@@ -41,20 +48,18 @@ public class SimpleFineIssuer implements FineIssuer {
             }
         }
 
-        // cálculo polimórfico
+
         fine.compute();
 
-        // Persistencia: el DAO hace INSERT, obtiene fineid y actualiza barcode
-        try {
-            fineDao.insert(fine);           // <- te setea fineId y barcode en el mismo objeto
-        } catch (Exception e) {
-            // convertimos a unchecked para no contaminar la firma
-            throw new RuntimeException("No se pudo guardar la multa en DB", e);
-        }
 
-        // NO generes id/barcode acá; ya lo dejó listo el DAO
+        try {
+            fineDao.insert(fine);
+        } catch (SQLException e) {
+            throw new DatabaseOperationException("No se pudo guardar la multa en DB", e);
+        }
         return fine;
     }
+
 
     private static int asInt(Object o, int def) {
         if (o == null) return def;

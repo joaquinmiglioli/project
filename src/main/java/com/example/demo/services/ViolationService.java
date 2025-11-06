@@ -1,8 +1,10 @@
 package com.example.demo.services;
 
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.springframework.stereotype.Service;
+
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -12,11 +14,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-@Service
 
+
+//mantiene la lista de violaciones
+
+
+@Service
 public class ViolationService {
 
+
     public enum Type { SPEEDING, ILLEGAL_PARKING, RED_LIGHT, SERVICE_CALL }
+
 
     public static final class Violation implements Serializable {
         public final Instant ts;
@@ -25,6 +33,7 @@ public class ViolationService {
         public final String details;
         public final Type type;
 
+
         public Violation(Instant ts, String deviceId, String plate, Type type, String details){
             this.ts = ts;
             this.deviceId = deviceId;
@@ -32,6 +41,7 @@ public class ViolationService {
             this.type = type;
             this.details = details;
         }
+
 
         public Instant getTs()        {
             return ts;
@@ -50,14 +60,16 @@ public class ViolationService {
         }
     }
 
+
     private final ObservableList<Violation> items = FXCollections.observableArrayList();
     public ObservableList<Violation> items() {
         return items;
     }
 
+
     public ViolationService() {}
 
-    /** Construye el servicio partiendo de una lista persistida (seed). */
+
     public static ViolationService fromSeed(List<com.example.demo.core.CentralState.ViolationSnapshot> seed) {
         ViolationService vs = new ViolationService();
         if (seed != null) {
@@ -74,7 +86,8 @@ public class ViolationService {
         return vs;
     }
 
-    /** Exporta el contenido actual para persistir en CentralState. */
+
+    //exporta el contenido a CentralState
     public List<com.example.demo.core.CentralState.ViolationSnapshot> exportAll() {
         List<com.example.demo.core.CentralState.ViolationSnapshot> out = new ArrayList<>();
         for (var v : items) {
@@ -89,7 +102,7 @@ public class ViolationService {
         return out;
     }
 
-    // helpers
+
     public void recordSpeeding(String dev, String plate, int speed, int limit) {
         items.add(new Violation(Instant.now(), dev, plate, Type.SPEEDING,
                 "Speed " + speed + " (limit " + limit + ")"));
@@ -105,7 +118,7 @@ public class ViolationService {
         items.add(new Violation(Instant.now(), camId, "-", Type.SERVICE_CALL, service));
     }
 
-    // agregados simples (para Reports)
+
     public Map<String, Long> countByDevice() {
         return items.stream().collect(Collectors.groupingBy(v -> v.deviceId,
                 LinkedHashMap::new, Collectors.counting()));

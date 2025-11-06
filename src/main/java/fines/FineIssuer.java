@@ -1,6 +1,11 @@
 package fines;
 
+
 import java.util.Map;
+
+
+//interfaz que define issue
+
 
 public interface FineIssuer {
     Fine issue(FineType type,
