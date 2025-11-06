@@ -1,8 +1,13 @@
 package cars;
 
+
+//objeto que representa una marca de auto con id y nombre
+
+
 public class CarBrand {
     private long idbrand;
     private String name;
+
 
     public CarBrand() {}
     public CarBrand( long idbrand, String name) {
@@ -10,12 +15,14 @@ public class CarBrand {
         this.name = name;
     }
 
+
     public long getIdbrand() {
         return idbrand;
     }
     public void setIdbrand(long idbrand) {
         this.idbrand = idbrand;
     }
+
 
     public String getName() {
         return name;
