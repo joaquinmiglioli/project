@@ -4,7 +4,7 @@ package devices;
 import java.io.Serializable;
 
 public abstract class Device implements Serializable {
-    private String deviceId;            // "RAD-1", "PK-3", "INT-5", "CAM-2"
+    private String deviceId;
     private String address;
     private DeviceStatus status = DeviceStatus.UNKNOWN;
 
@@ -22,8 +22,43 @@ public abstract class Device implements Serializable {
     public DeviceStatus getStatus() { return status; }
     public void setStatus(DeviceStatus status) { this.status = status; }
 
-    // ==== mantenimiento genérico (podés overridear en subclases si querés efectos extra) ====
-    public void fail()        { setStatus(DeviceStatus.FAILURE); }
-    public void repair()      { setStatus(DeviceStatus.NORMAL); }
-    public void intermittent() { setStatus(DeviceStatus.INTERMITTENT); }
+    // ==== MANTENIMIENTO (VERSIÓN CON SOBRECARGA) ====
+
+    // --- 1. MÉTODOS SIMPLES (Para el Simulador) ---
+    // (Solo cambian el estado interno)
+
+    /** Pone el dispositivo en estado FAILURE. */
+    public void fail() {
+        setStatus(DeviceStatus.FAILURE);
+    }
+
+    /** Pone el dispositivo en estado NORMAL. */
+    public void repair() {
+        setStatus(DeviceStatus.NORMAL);
+    }
+
+    /** Pone el dispositivo en estado INTERMITTENT. */
+    public void intermittent() {
+        setStatus(DeviceStatus.INTERMITTENT);
+    }
+
+
+    // --- 2. MÉTODOS CON CONTEXTO (Para la UI / Botones) ---
+    // (Llaman al método simple, y las subclases pueden sobreescribirlos
+    // para añadir lógica extra, como pausar el ciclo)
+
+    /** Pone el dispositivo en estado FAILURE (versión con contexto). */
+    public void fail(IMaintenanceContext context) {
+        this.fail(); // Llama al método simple
+    }
+
+    /** Pone el dispositivo en estado NORMAL (versión con contexto). */
+    public void repair(IMaintenanceContext context) {
+        this.repair(); // Llama al método simple
+    }
+
+    /** Pone el dispositivo en estado INTERMITTENT (versión con contexto). */
+    public void intermittent(IMaintenanceContext context) {
+        this.intermittent(); // Llama al método simple
+    }
 }
