@@ -11,9 +11,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/*Métodos para la tabla fines.
+*/
+
 public class FineDAO {
 
-    /** SQL base para seleccionar multas con toda la info del auto. */
+    // SQL base para seleccionar multas con toda la info del auto.
     private static final String SELECT_FINE_WITH_CAR_SQL = """
         SELECT f.fineid, f.finedate, f.type, f.amount, f.scoringpoints, f.deviceid, f.photourl, f.barcode,
                c.carid, c."licensePlate", c.owner, c.address, c.colour,
@@ -26,7 +29,7 @@ public class FineDAO {
         """;
 
 
-    /** Inserta la multa, setea el fineId y actualiza el barcode con el id ya generado. */
+    // Inserta la multa, setea el fineId y  actualiza el barcode con el id ya generado.
     public void insert(Fine fine) throws SQLException {
         String insertSql = """
             INSERT INTO fines(finedate, type, amount, scoringpoints, deviceid, photourl, carid)
@@ -64,7 +67,7 @@ public class FineDAO {
         }
     }
 
-    /** Lista todas (con JOINs para reconstruir el Car completo). */
+    //Lista todas (con JOINs para reconstruir el Car completo).
     public List<Fine> findAll(int limit) throws SQLException {
         String sql = SELECT_FINE_WITH_CAR_SQL + """
             ORDER BY f.finedate DESC
@@ -83,10 +86,7 @@ public class FineDAO {
         return out;
     }
 
-    /**
-     * ✅ --- NUEVO MÉTODO PARA REPORTE 3 ---
-     * Busca multas por patente
-     */
+    // Busca multas por patente(Reporte 3)
     public List<Fine> findByPlate(String plate) throws SQLException {
         String sql = SELECT_FINE_WITH_CAR_SQL + """
             WHERE c."licensePlate" = ?
@@ -106,7 +106,7 @@ public class FineDAO {
     }
 
 
-    /** Borra todo y reinicia el autonumérico a 1, compatible con SERIAL o IDENTITY. */
+    //Borra ttodo y reinicia el autonumerico a 1
     public void deleteAll() throws SQLException {
         try (Connection conn = DBConnection.getConnection();
              Statement st = conn.createStatement()) {
@@ -115,7 +115,7 @@ public class FineDAO {
 
             st.executeUpdate("DELETE FROM fines");
 
-            // 1) Intento para columnas SERIAL (usa la secuencia asociada a fines.fineid)
+            // 1) Intento para columnas SERIAL
             try {
                 st.execute("SELECT setval(pg_get_serial_sequence('fines','fineid'), 1, false)");
             } catch (SQLException e) {
@@ -127,7 +127,7 @@ public class FineDAO {
         }
     }
 
-    // ---------- helpers ----------
+    // helpers
 
     private Fine mapFineWithCar(ResultSet rs) throws SQLException {
         // Car

@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
+
+/*Expone los 5 reportes como endpoints para el frontend.
+Decisión de diseño: Este controlador es un intermediario, no hace ningún trabajo.
+ Simplemente recibe la petición y llama al ReportService para que haga el procesamiento.
+ */
 
 @RestController
 @RequestMapping("/api/reports")
@@ -25,9 +29,7 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    /**
-     * Endpoint para el Reporte 1: Estado de Dispositivos
-     */
+    // Endpoint para el Reporte 1: Estado de Dispositivos
     @GetMapping("/device-status")
     public DeviceStatusReport getDeviceStatusReport(
             @RequestParam(required = false) String type,
@@ -36,25 +38,20 @@ public class ReportController {
         return reportService.generateDeviceStatusReport(type, status);
     }
 
-    /**
-     * Endpoint para el Reporte 2: Listado de Multas
-     */
+    //Endpoint para el Reporte 2: Listado de Multas
     @GetMapping("/fines")
     public FinesReport getFinesReport() {
         return reportService.generateFinesReport();
     }
 
-    /**
-     * Endpoint para el Reporte 3: Multas por Patente
-     */
+    // Endpoint para el Reporte 3: Multas por Patente
     @GetMapping("/fines-by-plate")
     public List<Fine> getFinesByPlateReport(@RequestParam String plate) {
         return reportService.generateFinesByPlateReport(plate);
     }
 
-    /**
-     * Endpoint para el Reporte 4: Avisos de Seguridad
-     */
+   // Endpoint para el Reporte 4: Avisos de Seguridad
+
     @GetMapping("/security-logs")
     public SecurityLogsReport getSecurityLogsReport(
             @RequestParam(required = false) String start,
@@ -63,17 +60,13 @@ public class ReportController {
         return reportService.generateSecurityLogsReport(start, end);
     }
 
-    /**
-     * Endpoint para el Reporte 5: Eventos por Dispositivo
-     */
+    // Endpoint para el Reporte 5: Eventos por Dispositivo
     @GetMapping("/device-events")
     public DeviceEventsReport getDeviceEventsReport(@RequestParam String deviceId) {
         return reportService.generateDeviceEventsReport(deviceId);
     }
 
-    /**
-     * Endpoint auxiliar para poblar el dropdown del Reporte 5
-     */
+    // Endpoint auxiliar para poblar el dropdown del Reporte 5
     @GetMapping("/device-ids")
     public List<String> getAllDeviceIds() {
         return reportService.getAllDeviceIds();

@@ -11,9 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-/**
- * Controlador para acciones administrativas del sistema, como el reseteo.
- */
+/*Expone funciones administrativas.
+resetState():  Responde a POST /api/system/reset. Borra el archivo state.bin, le indica a AppContext que no guarde al salir, y reinicia la aplicación. Esto permite volver al estado inicial de devices.json.
+*/
+
 @RestController
 @RequestMapping("/api/system")
 public class SystemController {
@@ -43,8 +44,8 @@ public class SystemController {
             }
 
             // 2. DESHABILITAR EL GUARDADO AL SALIR
-            // (Llama al método que creamos en AppContext)
-            //
+            // (Llama al metodo que creamos en AppContext)
+
             appContext.disableSaveOnExit();
 
             // Hilo para apagar la app 1 seg después de enviar la respuesta OK
@@ -53,7 +54,7 @@ public class SystemController {
 
                 // 3. CERRAR SPRING GRACEFULLY (sin System.exit)
                 // Esto ejecutará el @PreDestroy, pero como pusimos el flag,
-                // el método saveOnExit() se saltará el guardado.
+                // el metodo saveOnExit() se saltará el guardado.
                 //
                 SpringApplication.exit(springContext, () -> 0);
             }).start();

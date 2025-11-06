@@ -13,6 +13,10 @@ import com.example.demo.exceptions.DatabaseOperationException;
 import com.example.demo.exceptions.DuplicateResourceException;
 import java.sql.SQLException;
 
+/*Métodos para la tabla cars.
+ Incluye findRandom()  (usado por CarService) y mapCar() (un helper para construir el objeto Car completo con su marca y modelo).
+ */
+
 public class CarDAO {
 
     private final CarBrandDAO brandDAO = new CarBrandDAO();
@@ -50,7 +54,7 @@ public class CarDAO {
         return Optional.empty();
     }
 
-    /** Auto al azar (PG): ORDER BY random(). */
+    // Auto al azar : ORDER BY random().
     public Optional<Car> findRandom() throws SQLException {
         String sql = """
             SELECT carid, carbrand, carmodel, "licensePlate", owner, address, colour
@@ -81,7 +85,7 @@ public class CarDAO {
         return out;
     }
 
-    // Inserts/updates si los querés (con BIGSERIAL, usamos RETURNING para recuperar el id):
+    // Inserts
     public long insert(long brandId, long modelId, String plate, String owner, String address, String colour) throws SQLException {
         String sql = """
             INSERT INTO cars(carbrand, carmodel, "licensePlate", owner, address, colour)
@@ -90,7 +94,6 @@ public class CarDAO {
             """;
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            // ... (setear parámetros)
             ps.setLong(1, brandId);
             ps.setLong(2, modelId);
             ps.setString(3, plate);
@@ -105,7 +108,7 @@ public class CarDAO {
         } catch (SQLException e) {
             // Código de error 23505 = 'unique_violation' en PostgreSQL
             if ("23505".equals(e.getSQLState())) {
-                // ¡Lanzamos nuestra excepción específica!
+                // Lanzamos nuestra excepción
                 throw new DuplicateResourceException("Car", "plate", plate);
             }
             // Para cualquier otro error de SQL, lanzamos la genérica de DB
@@ -141,7 +144,7 @@ public class CarDAO {
         }
     }
 
-    // --- mapeo helper ---
+    // mapeo helper
     private Car mapCar(ResultSet rs) throws SQLException {
         long brandId = rs.getLong("carbrand");
         long modelId = rs.getLong("carmodel");

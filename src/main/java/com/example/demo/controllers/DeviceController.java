@@ -12,6 +12,14 @@ import com.example.demo.exceptions.ResourceNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+Es el controlador principal para el mapa.
+grouped(): Responde a GET /api/devices.
+Prepara un JSON con todos los dispositivos agrupados por tipo (radars, parkingCameras, etc.) para que el frontend los dibuje.
+setStatus(), repair(), fail(), intermittent(): Exponen los endpoints para el mantenimiento de dispositivos (ej. /api/devices/{id}/repair), permitiendo al usuario repararlos desde el mapa.
+*/
+
+
 @RestController
 @RequestMapping("/api/devices")
 public class DeviceController {
@@ -20,16 +28,13 @@ public class DeviceController {
 
     public DeviceController(AppContext ctx) { this.ctx = ctx; }
 
-    /**
-     * JSON agrupado para el front:
-     * (Método grouped() sin cambios)
-     */
+
     @GetMapping
     public Map<String, Object> grouped() {
         Map<String, Object> out = new LinkedHashMap<>();
         Collection<CentralState.DeviceSnapshot> all = ctx.state.devicesById.values();
 
-        // ---------- RADARS (incluimos limit/speedLimit) ----------
+        //  RADARS (incluimos limit/speedLimit)
         var radars = all.stream()
                 .filter(s -> "Radar".equalsIgnoreCase(s.type))
                 .map(s -> {
@@ -47,7 +52,7 @@ public class DeviceController {
                 .collect(Collectors.toList());
         out.put("radars", radars);
 
-        // ---------- PARKING CAMERAS (toleranceTime/toleranceSec) ----------
+        // PARKING CAMERAS (toleranceTime/toleranceSec)
         var parking = all.stream()
                 .filter(s -> "ParkingCamera".equalsIgnoreCase(s.type))
                 .map(s -> {
@@ -65,7 +70,7 @@ public class DeviceController {
                 .collect(Collectors.toList());
         out.put("parkingCameras", parking);
 
-        // ---------- SECURITY CAMERAS ----------
+        //  SECURITY CAMERAS
         var cams = all.stream()
                 .filter(s -> "SecurityCamera".equalsIgnoreCase(s.type))
                 .map(s -> Map.of(
@@ -77,7 +82,7 @@ public class DeviceController {
                 .collect(Collectors.toList());
         out.put("cameras", cams);
 
-        // ---------- SEMAPHORES (TrafficLight en state → “semaphores”) ----------
+        //  SEMAPHORES (TrafficLight en state → “semaphores”)
         var sems = all.stream()
                 .filter(s -> "TrafficLight".equalsIgnoreCase(s.type))
                 .map(s -> {
@@ -101,19 +106,19 @@ public class DeviceController {
         return out;
     }
 
-    /** Lista plana para depuración. */
+    //Lista plana para depuración.
     @GetMapping("/raw")
     public Collection<CentralState.DeviceSnapshot> raw() {
         return ctx.state.devicesById.values();
     }
 
-    /** POST de estado (sigue disponible). */
+    // POST de estado (sigue disponible ).
     @PostMapping("/{id}/status")
     public Map<String, String> setStatus(@PathVariable String id, @RequestParam String action) {
         return applyStatusAction(id, action);
     }
 
-    // Endpoints GET rápidos (sin cambios)
+    // Endpoints GET rápidos
     @GetMapping("/{id}/repair")
     public Map<String, String> repair(@PathVariable String id) {
         return applyStatusAction(id, "REPAIR");
@@ -129,7 +134,7 @@ public class DeviceController {
         return applyStatusAction(id, "INTERMITTENT");
     }
 
-    // ---------- helpers ----------
+    //  helpers
     private Map<String, String> applyStatusAction(String id, String action) {
         Device d = ctx.deviceCatalog.get(id);
         if (d == null) {
@@ -151,7 +156,7 @@ public class DeviceController {
     private static String uiStatus(DeviceStatus st) {
         if (st == null) return "READY";
         return switch (st) {
-            case NORMAL, UNKNOWN -> "READY";    // 👈 CASOS AGRUPADOS
+            case NORMAL, UNKNOWN -> "READY";
             case FAILURE         -> "ERROR";
             case INTERMITTENT    -> "YELLOW";
             // Ya no se necesita 'default' porque cubrimos todos los casos del enum
