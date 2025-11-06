@@ -4,7 +4,7 @@ import db.CarDAO;
 
 import java.sql.SQLException;
 
-/*Un servicio simple que provee lógica de negocio relacionada con autos. Su único metodo, randomCar(), pide un auto al azar al CarDAO.
+/*Un servicio simple que provee lógica de negocio relacionada  con autos. Su único metodo, randomCar(), pide un auto al azar al CarDAO.
  */
 
 public class CarService {
