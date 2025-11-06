@@ -1,4 +1,3 @@
-
 package devices;
 
 import java.time.Instant;
@@ -27,7 +26,7 @@ public class SecurityWarning {
         this.note = note;
     }
 
-    // Getters/Setters
+    // Getters y setters
     public String getId() { return id; }
     public String getDeviceId() { return deviceId; }
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
