@@ -546,6 +546,9 @@
       async function loadDevices(){ try{ const r=await fetch('/api/devices',{cache:'no-store'}); if(!r.ok) throw 0; addDevices(await r.json()); }catch(e){ console.warn('Could not load /api/devices',e); } }
       loadDevices();
 
+      // ✅ TAREA: Volver a cargar los dispositivos cada 60 segundos
+      // para reflejar los fallos aleatorios (Requisito 2.d del TP).
+      setInterval(loadDevices, 60000);
 
       // ✅ --- INICIO: LÓGICA DE PARPADEO ---
       let blinkState = false; // Estado global de parpadeo (toggle)
