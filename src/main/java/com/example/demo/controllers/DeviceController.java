@@ -22,10 +22,7 @@ public class DeviceController {
 
     /**
      * JSON agrupado para el front:
-     * - radars:          { id, lat, lng, status, limit, speedLimit }
-     * - parkingCameras:  { id, lat, lng, status, toleranceTime, toleranceSec }
-     * - cameras:         { id, lat, lng, status }
-     * - semaphores:      { id, lat, lng, status, a, b, principalIsA }
+     * (Método grouped() sin cambios)
      */
     @GetMapping
     public Map<String, Object> grouped() {
@@ -43,8 +40,8 @@ public class DeviceController {
                             "lat", s.lat,
                             "lng", s.lng,
                             "status", uiStatus(s.status),
-                            "limit", limit,         // 👈 nombre que suelen usar los popups
-                            "speedLimit", limit     // 👈 alias por si el front espera este
+                            "limit", limit,
+                            "speedLimit", limit
                     );
                 })
                 .collect(Collectors.toList());
@@ -61,8 +58,8 @@ public class DeviceController {
                             "lat", s.lat,
                             "lng", s.lng,
                             "status", uiStatus(s.status),
-                            "toleranceTime", tol,   // 👈 coincide con tu JSON original
-                            "toleranceSec",  tol    // 👈 alias, por las dudas
+                            "toleranceTime", tol,
+                            "toleranceSec",  tol
                     );
                 })
                 .collect(Collectors.toList());
@@ -116,7 +113,7 @@ public class DeviceController {
         return applyStatusAction(id, action);
     }
 
-    // ✅ Endpoints GET rápidos para enganchar desde el popup (menos fricción en el front)
+    // Endpoints GET rápidos (sin cambios)
     @GetMapping("/{id}/repair")
     public Map<String, String> repair(@PathVariable String id) {
         return applyStatusAction(id, "REPAIR");
@@ -136,17 +133,14 @@ public class DeviceController {
     private Map<String, String> applyStatusAction(String id, String action) {
         Device d = ctx.deviceCatalog.get(id);
         if (d == null) {
-            // ¡Lanzamos nuestra excepción específica!
             throw new ResourceNotFoundException("Device", id);
         }
 
-        // ✅ AHORA PASAMOS EL CONTEXTO (ctx)
-        // El método polimórfico de Device/TrafficLightController se encargará
-        // de actualizar el estado (POJO) Y notificar a los servicios (Ciclo).
+        // Llamamos a la versión CON CONTEXTO.
         switch (action.toUpperCase()) {
-            case "FAIL"         -> d.fail(ctx);         // 👈 Pasa ctx
-            case "REPAIR"       -> d.repair(ctx);       // 👈 Pasa ctx
-            case "INTERMITTENT" -> d.intermittent(ctx); // 👈 Pasa ctx
+            case "FAIL"         -> d.fail(ctx);
+            case "REPAIR"       -> d.repair(ctx);
+            case "INTERMITTENT" -> d.intermittent(ctx);
             default -> throw new IllegalArgumentException("Unknown action: " + action);
         }
 
@@ -157,10 +151,10 @@ public class DeviceController {
     private static String uiStatus(DeviceStatus st) {
         if (st == null) return "READY";
         return switch (st) {
-            case NORMAL       -> "READY";
-            case FAILURE      -> "ERROR";
-            case INTERMITTENT -> "YELLOW";
-            default           -> "READY";
+            case NORMAL, UNKNOWN -> "READY";    // 👈 CASOS AGRUPADOS
+            case FAILURE         -> "ERROR";
+            case INTERMITTENT    -> "YELLOW";
+            // Ya no se necesita 'default' porque cubrimos todos los casos del enum
         };
     }
 
