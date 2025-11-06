@@ -1,4 +1,3 @@
-// devices/ParkingCamera.java
 package devices;
 
 public class ParkingCamera extends Device {

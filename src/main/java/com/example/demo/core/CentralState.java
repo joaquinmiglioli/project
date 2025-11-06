@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.*;
 
-/**
- * Estado serializable completo de la central.
- * Se persiste en disco al salir y se restaura al iniciar.
- */
-    @Component  // ⬅️ ESTA LÍNEA convierte CentralState en un bean que Spring puede inyectar
+/*
+ Contiene todo el estado de la aplicación (la lista de dispositivos, el estado de cada semáforo, el historial de violaciones).
+           Decisión de diseño: Esta clase es Serializable, lo que permite que StatePersistenceService la guarde y cargue de golpe en un archivo binario (state.bin).
+*/
+    @Component
         public class CentralState implements Serializable {
 
-    // ===== Dispositivos (por ID: "RAD-1", "PK-3", "INT-5", "CAM-2") =====
+    //Dispositivos (por ID: "RAD-1", "PK-3", "INT-5", "CAM-2")
     public Map<String, DeviceSnapshot> devicesById = new LinkedHashMap<>();
 
     // Configuraciones de simulación
@@ -57,7 +57,6 @@ import java.util.*;
         public Integer toleranceSec;
         public Boolean principalIsA;
 
-        // ⬇⬇⬇ NUEVO: coordenadas para pintar en el mapa
         public Double lat;
         public Double lng;
 

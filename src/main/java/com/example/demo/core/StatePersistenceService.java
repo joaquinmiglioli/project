@@ -6,11 +6,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/** Guarda/carga CentralState en un binario simple (serialización Java).
+// Maneja la persistencia del estado de la aplicación.
 
- * Si no hay snapshot, intenta cargar devices.json desde el Path; si no existe,
- * intenta cargar devices.json desde el classpath (resources).
- */
 public final class StatePersistenceService {
     private final Path file;
 
@@ -25,7 +22,7 @@ public final class StatePersistenceService {
     }
 
     public CentralState loadOrBootstrap(Path devicesJsonPath) {
-        // 1) si existe el snapshot binario, lo leemos
+        // si existe el snapshot binario, se lee
         if (Files.exists(file)) {
             try (var in = new ObjectInputStream(Files.newInputStream(file))) {
                 return (CentralState) in.readObject();
@@ -33,10 +30,9 @@ public final class StatePersistenceService {
                 System.err.println("Fallo leyendo snapshot, rearmando desde JSON… " + e.getMessage());
             }
         }
-        // 2) No hay snapshot: construiremos el estado a partir del JSON
+        // no hay snapshot: se desarrolla el estado a partir del JSON
         CentralState st = new CentralState();
 
-        // 2.a) si devicesJsonPath existe en disco, usarlo
         try {
             if (devicesJsonPath != null && Files.exists(devicesJsonPath)) {
                 BootstrapLoader.loadFromJson(devicesJsonPath, st);
@@ -46,7 +42,6 @@ public final class StatePersistenceService {
             throw new RuntimeException("Error cargando " + devicesJsonPath, e);
         }
 
-        // 2.b) fallback: intentar cargar devices.json desde classpath (resources)
         try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("static/devices.json")) {
             if (is != null) {
                 BootstrapLoader.loadFromJson(is, st);

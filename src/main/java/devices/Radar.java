@@ -1,4 +1,3 @@
-// devices/Radar.java
 package devices;
 
 public class Radar extends Device {

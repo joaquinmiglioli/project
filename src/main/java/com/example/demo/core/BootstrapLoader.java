@@ -9,13 +9,14 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Carga devices iniciales desde devices.json (Path o InputStream).
- * Soporta tu estructura actual con:
- *  - "semaphoreControllers" (con semA/semB, main, status, lat/lng)
- *  - "radars", "parkingCameras", "securityCameras"
- * También setea tlStates y principalIsA para semáforos.
- */
+/*
+  Carga devices iniciales desde devices.json .
+  Sigue la estructura con:
+   - "semaphoreControllers" (con semA/semB, main, status, lat/lng)
+   - "radars", "parkingCameras", "securityCameras"
+  También settea tlStates y principalIsA para semáforos.
+
+*/
 public final class BootstrapLoader {
     private BootstrapLoader() {}
 
@@ -39,17 +40,12 @@ public final class BootstrapLoader {
         }
     }
 
-    // =====================================================================================
-    // Núcleo: leer cada sección del JSON y poblar CentralState
-    // =====================================================================================
+    // lee cada sección del JSON y completa CentralState
     private static void populateFromRoot(JsonNode root, CentralState state) {
         if (root == null || !root.isObject()) {
             throw new RuntimeException("devices.json no es un objeto JSON válido");
         }
-
-        // ---------------------------- SEMÁFOROS ----------------------------
-        // Tu JSON usa "semaphoreControllers" con estructura:
-        // { id, lat, lng, status, semA{status, main, ...}, semB{status, ...} }
+    //      Semáforos
         if (root.has("semaphoreControllers") && root.get("semaphoreControllers").isArray()) {
             for (var n : root.withArray("semaphoreControllers")) {
                 try {
@@ -61,51 +57,44 @@ public final class BootstrapLoader {
                     String addr = textOr(n, "address", "addr", "location");
                     if (addr == null) addr = "SIN DIRECCIÓN";
 
-                    // principalIsA desde semA.main (default true si no viene)
                     boolean principalIsA = booleanOr(n.path("semA"), "main", true);
 
-                    // --- ✅ LÓGICA CORREGIDA ---
-
-                    // 1. Leer el estado de las LUCES primero
                     TrafficLightStatus a = mapLight(textOr(n.path("semA"), "status"));
                     TrafficLightStatus b = mapLight(textOr(n.path("semB"), "status"));
 
-                    // Si no vienen, por defecto A=GREEN B=RED
                     if (a == null) a = TrafficLightStatus.GREEN;
                     if (b == null) b = TrafficLightStatus.RED;
 
-                    // 2. Determinar el estado del DISPOSITIVO (usando la función corregida)
-                    // (Esto captura la Regla 1: "status": "ERROR" en el JSON)
+                    // Determina el estado del dispositivo
+
                     DeviceStatus deviceStatus = mapDeviceStatus(textOr(n, "status"));
 
-                    // 3. Aplicar Regla 2: Sobrescribir a FAILURE si ambas luces son VERDES
-                    // (como dice la "Tabla de Decisión" del PDF)
+                    // sobreescribe a failure si ambas luces son VERDES
                     if (a == TrafficLightStatus.GREEN && b == TrafficLightStatus.GREEN) {
                         deviceStatus = DeviceStatus.FAILURE;
                     }
 
-                    // 4. Crear el snapshot con el estado de dispositivo VALIDADO
+                    // Crear el snapshot con el estado de dispositivo VALIDADO
                     CentralState.DeviceSnapshot snap = CentralState.DeviceSnapshot.trafficLight(id, addr, principalIsA);
                     snap.lat = doubleOr(n, "lat", "latitude", "y");
                     snap.lng = doubleOr(n, "lng", "lon", "long", "longitude", "x");
-                    snap.status = deviceStatus; // <-- Se usa el estado final validado
+                    snap.status = deviceStatus;
 
                     state.devicesById.put(id, snap);
 
-                    // 5. Guardar el estado de las LUCES (A y B)
+                    // Guarda el estado de las luces (A y B)
                     state.tlMode.put(id, deviceStatus == DeviceStatus.FAILURE
                             ? CentralState.TLMode.FLASHING
                             : CentralState.TLMode.NORMAL);
 
                     state.tlStates.put(id, new CentralState.TLState(a, b, principalIsA));
-                    // --- ✅ FIN DE LA CORRECCIÓN ---
 
                 } catch (Exception e) {
                     System.err.println("Warning: no pude parsear un semaphoreController: " + e.getMessage());
                 }
             }
         }
-        // ---------------------------- RADARES ----------------------------
+        // Radares
         if (root.has("radars") && root.get("radars").isArray()) {
             for (var n : root.withArray("radars")) {
                 try {
@@ -132,7 +121,7 @@ public final class BootstrapLoader {
             }
         }
 
-        // ---------------------------- CÁMARAS DE ESTACIONAMIENTO ----------------------------
+        // Camaras de Estacionamiento
         if (root.has("parkingCameras") && root.get("parkingCameras").isArray()) {
             for (var n : root.withArray("parkingCameras")) {
                 try {
@@ -159,7 +148,7 @@ public final class BootstrapLoader {
             }
         }
 
-        // ---------------------------- CÁMARAS DE SEGURIDAD ----------------------------
+        // Camaras de seguridad
         if (root.has("securityCameras") && root.get("securityCameras").isArray()) {
             for (var n : root.withArray("securityCameras")) {
                 try {
@@ -184,10 +173,6 @@ public final class BootstrapLoader {
             }
         }
     }
-
-    // =====================================================================================
-    // Helpers
-    // =====================================================================================
 
     private static String textOr(JsonNode n, String... keys) {
         if (n == null) return null;
