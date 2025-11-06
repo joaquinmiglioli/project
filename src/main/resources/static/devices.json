@@ -1,5 +1,5 @@
 // l archivo de configuración inicial de dispositivos,
-//cargado por BootstrapLoader si state.bin no existe.
+//cargado por  BootstrapLoader si state.bin no existe.
 {
   "semaphoreControllers": [
     {

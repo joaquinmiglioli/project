@@ -62,7 +62,7 @@ public class SecurityOpsController {
         return u.endsWith(".jpg") || u.endsWith(".jpeg") || u.endsWith(".png") || u.endsWith(".webp");
     }
 
-    // Crea y guarda un SecurityWarning.
+    //  Crea y guarda un SecurityWarning.
     @PostMapping("/notify")
     public Map<String, Object> notifyService(
             @RequestParam String cameraId,

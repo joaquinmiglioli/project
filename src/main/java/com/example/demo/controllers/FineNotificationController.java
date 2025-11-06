@@ -33,7 +33,7 @@ public class FineNotificationController {
         return m;
     }
 
-    // Endpoint: limpia la última multa (el frontend lo llama después de mostrar el toast)
+    //  Endpoint: limpia la última multa (el frontend lo llama después de mostrar el toast)
     @GetMapping("/api/clearFine")
     public void clearLastFine() {
         lastFineNumber = null;

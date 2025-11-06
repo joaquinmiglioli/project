@@ -29,7 +29,7 @@ public class FineDAO {
         """;
 
 
-    // Inserta la multa, setea el fineId y actualiza el barcode con el id ya generado.
+    // Inserta la multa, setea el fineId y  actualiza el barcode con el id ya generado.
     public void insert(Fine fine) throws SQLException {
         String insertSql = """
             INSERT INTO fines(finedate, type, amount, scoringpoints, deviceid, photourl, carid)

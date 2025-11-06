@@ -126,7 +126,7 @@ public class CarManagementController {
             @RequestParam String address,
             @RequestParam String colour
     ) {
-        //VALIDACIÓN DE PATENTE
+        //VALIDACIÓN DE  PATENTE
         String upperPlate = plate.trim().toUpperCase();
         if (!PLATE_REGEX.matcher(upperPlate).matches()) {
             return Map.of(

@@ -112,7 +112,7 @@ public class DeviceController {
         return ctx.state.devicesById.values();
     }
 
-    // POST de estado (sigue disponible).
+    // POST de estado (sigue disponible ).
     @PostMapping("/{id}/status")
     public Map<String, String> setStatus(@PathVariable String id, @RequestParam String action) {
         return applyStatusAction(id, action);

@@ -44,7 +44,7 @@ public class ReportController {
         return reportService.generateFinesReport();
     }
 
-    //Endpoint para el Reporte 3: Multas por Patente
+    // Endpoint para el Reporte 3: Multas por Patente
     @GetMapping("/fines-by-plate")
     public List<Fine> getFinesByPlateReport(@RequestParam String plate) {
         return reportService.generateFinesByPlateReport(plate);

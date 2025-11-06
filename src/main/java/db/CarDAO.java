@@ -14,7 +14,7 @@ import com.example.demo.exceptions.DuplicateResourceException;
 import java.sql.SQLException;
 
 /*Métodos para la tabla cars.
- Incluye findRandom() (usado por CarService) y mapCar() (un helper para construir el objeto Car completo con su marca y modelo).
+ Incluye findRandom()  (usado por CarService) y mapCar() (un helper para construir el objeto Car completo con su marca y modelo).
  */
 
 public class CarDAO {

@@ -11,7 +11,7 @@ import fines.Fine;
 
 /*
 Maneja la API para la pestaña "Fines".
-listAll(): Responde a GET /api/fines y devuelve la lista de todas las multas desde la base de datos.
+listAll():  Responde a GET /api/fines y devuelve la lista de todas las multas desde la base de datos.
 deleteAll(): Responde a DELETE /api/fines y borra todas las multas de la base de datos.
 */
 

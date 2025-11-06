@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//Métodos para la tabla carbrands.
+//Métodos para la tabla carbrands .
 
 public class CarBrandDAO {
 

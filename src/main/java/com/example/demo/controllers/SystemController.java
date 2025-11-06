@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /*Expone funciones administrativas.
-resetState(): Responde a POST /api/system/reset. Borra el archivo state.bin, le indica a AppContext que no guarde al salir, y reinicia la aplicación. Esto permite volver al estado inicial de devices.json.
+resetState():  Responde a POST /api/system/reset. Borra el archivo state.bin, le indica a AppContext que no guarde al salir, y reinicia la aplicación. Esto permite volver al estado inicial de devices.json.
 */
 
 @RestController
