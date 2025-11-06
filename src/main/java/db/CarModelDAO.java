@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//Métodos para la tabla carmodels de la base de datos.
+
 public class CarModelDAO {
 
     private final CarBrandDAO brandDAO = new CarBrandDAO();

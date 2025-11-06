@@ -4,12 +4,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/*Clase utilitaria que provee la conexión a la base de datos PostgreSQL con los datos de URL, usuario y contraseña*/
+
 public class DBConnection {
 
-   //Ajusten la contraseña a su propia base de datos
-    private static final String JDBC_URL  = "jdbc:postgresql://localhost:1525/monitoringcenter";
+    private static final String JDBC_URL  = "jdbc:postgresql://localhost/monitoringcenter";
     private static final String USERNAME  = "postgres";
-    private static final String PASSWORD  = "Facundo-27";
+    private static final String PASSWORD  = "mati123";
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);

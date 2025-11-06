@@ -15,11 +15,14 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern; // ✅ <--- IMPORTAR ESTO
+import java.util.regex.Pattern;
 
-/**
- * Controlador para la gestión de Marcas, Modelos y Autos (CRUD).
- */
+/*
+Maneja las peticiones de la pestaña "Settings" para el CRUD (Crear, Leer, Actualizar, Borrar) de autos.
+Expone endpoints como /api/cars/brands (para listar marcas) y /api/cars/add (para agregar un auto nuevo).
+Cumple el requisito de que los autos se gestionen desde el sistema.
+*/
+
 @RestController
 @RequestMapping("/api/cars")
 public class CarManagementController {
@@ -28,20 +31,19 @@ public class CarManagementController {
     private final CarBrandDAO carBrandDAO;
     private final CarModelDAO carModelDAO;
 
-    // ✅ --- REGEX PARA VALIDAR PATENTES ---
+    // REGEX PARA VALIDAR PATENTES
     private static final Pattern PLATE_REGEX = Pattern.compile("^([A-Z]{3}\\d{3}|[A-Z]{2}\\d{3}[A-Z]{2})$");
 
     // Inyectamos el AppContext para acceder a los DAOs
     public CarManagementController(AppContext ctx) {
-        // Asumimos que expondremos los DAOs en AppContext (siguiente paso)
-        this.carDAO = new CarDAO(); // O ctx.getCarDAO() si lo tienes
-        this.carBrandDAO = new CarBrandDAO(); // O ctx.getCarBrandDAO()
-        this.carModelDAO = new CarModelDAO(); // O ctx.getCarModelDAO()
+
+        this.carDAO = new CarDAO(); //
+        this.carBrandDAO = new CarBrandDAO();
+        this.carModelDAO = new CarModelDAO();
     }
 
-    /**
-     * Devuelve todas las marcas de autos.
-     */
+
+    //Devuelve todas las marcas de autos.
     @GetMapping("/brands")
     public List<CarBrand> getBrands() {
         try {
@@ -52,9 +54,7 @@ public class CarManagementController {
         }
     }
 
-    /**
-     * Devuelve los modelos para una marca específica.
-     */
+   //Devuelve los modelos para una marca específica.
     @GetMapping("/models")
     public List<CarModel> getModels(@RequestParam Long brandId) {
         try {
@@ -65,9 +65,7 @@ public class CarManagementController {
         }
     }
 
-    /**
-     * ✅ --- NUEVO ENDPOINT: Añade una nueva MARCA ---
-     */
+   //NUEVO ENDPOINT: Añade una nueva MARCA
     @PostMapping("/brands/add")
     public Map<String, Object> addBrand(@RequestParam String name) {
         try {
@@ -92,9 +90,7 @@ public class CarManagementController {
         }
     }
 
-    /**
-     * ✅ --- NUEVO ENDPOINT: Añade un nuevo MODELO ---
-     */
+    //NUEVO ENDPOINT: Añade un nuevo MODELO
     @PostMapping("/models/add")
     public Map<String, Object> addModel(@RequestParam Long brandId, @RequestParam String name) {
         try {
@@ -120,9 +116,7 @@ public class CarManagementController {
     }
 
 
-    /**
-     * Añade un nuevo auto a la base de datos.
-     */
+   // Añade un nuevo auto a la base de datos.
     @PostMapping("/add")
     public Map<String, Object> addCar(
             @RequestParam Long brandId,
@@ -132,7 +126,7 @@ public class CarManagementController {
             @RequestParam String address,
             @RequestParam String colour
     ) {
-        // ✅ --- VALIDACIÓN DE PATENTE ---
+        //VALIDACIÓN DE PATENTE
         String upperPlate = plate.trim().toUpperCase();
         if (!PLATE_REGEX.matcher(upperPlate).matches()) {
             return Map.of(
@@ -151,7 +145,7 @@ public class CarManagementController {
             );
 
         } catch (DuplicateResourceException e) {
-            // ¡Ahora capturamos la excepción específica!
+            //capturamos la excepcion que creamos
             // Ya no comparamos strings.
             return Map.of("ok", false, "message", e.getMessage());
 

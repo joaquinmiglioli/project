@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+//Métodos para la tabla carbrands.
+
 public class CarBrandDAO {
 
     public Optional<CarBrand> findById(long idbrand) throws SQLException {

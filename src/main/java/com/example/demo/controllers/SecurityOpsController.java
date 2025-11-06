@@ -12,20 +12,26 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+/*Maneja las operaciones de las cámaras de seguridad.
+notifyService(): Responde a POST /api/security/notify. Se llama cuando el operador presiona "Police", "Fireman", "Ambulance"., en el popup de la cámara. Guarda un SecurityWarning en una lista en memoria.
+log(): Responde a GET /api/security/log y devuelve la lista de todos los avisos guardados para la pestaña "Logs".
+*/
+
+
 @RestController
 @RequestMapping("/api/security")
 public class SecurityOpsController {
 
-    /** Log de notificaciones (en memoria, thread-safe). */
+    //Log de notificaciones (en memoria).
     private final List<SecurityWarning> notifications = new CopyOnWriteArrayList<>();
 
-    /** Opcional: lista de tipos válidos (por si el front quiere poblar UI). */
+    // lista de tipos válidos.
     @GetMapping("/services")
     public List<String> services() {
         return Arrays.stream(ServiceType.values()).map(Enum::name).toList();
     }
 
-    /** Lista rutas públicas de imágenes (preferencia /static/images/security). */
+    // Lista rutas públicas de imágenes
     @GetMapping("/images")
     public List<String> listImages() throws IOException {
         var preferred = new ClassPathResource("static/images/security");
@@ -56,7 +62,7 @@ public class SecurityOpsController {
         return u.endsWith(".jpg") || u.endsWith(".jpeg") || u.endsWith(".png") || u.endsWith(".webp");
     }
 
-    /** Crea y guarda un SecurityWarning. */
+    // Crea y guarda un SecurityWarning.
     @PostMapping("/notify")
     public Map<String, Object> notifyService(
             @RequestParam String cameraId,
@@ -78,7 +84,7 @@ public class SecurityOpsController {
         return Map.of("ok", true, "event", sw);
     }
 
-    /** Para inspección/depuración del historial. */
+    //Para inspección/depuración del historial.
     @GetMapping("/log")
     public List<SecurityWarning> log() {
         // En orden cronológico (más nuevos al final, como se insertan)
