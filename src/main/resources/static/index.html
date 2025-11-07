@@ -338,7 +338,10 @@
     document.addEventListener('DOMContentLoaded', function(){
 
       /* ================== MAPA ================== */
-      const map = L.map('map', { zoomControl: true }).setView([-38.0, -57.55], 15);
+      const map = L.map('map', { zoomControl: true,
+      minZoom:14,
+      maxZoom:18
+      }).setView([-38.0, -57.55], 15);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '© OpenStreetMap, © CARTO' }).addTo(map);
 
       // --- Grupos duplicados para fallas ---

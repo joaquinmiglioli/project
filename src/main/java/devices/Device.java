@@ -2,7 +2,7 @@ package devices;
 
 import java.io.Serializable;
 
-public abstract class Device implements Serializable {
+public class Device implements Serializable {
     private String deviceId;
     private String address;
     private DeviceStatus status = DeviceStatus.UNKNOWN;
