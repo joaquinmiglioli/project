@@ -7,6 +7,6 @@ package com.example.demo.exceptions;
 public class DuplicateResourceException extends MonitoringException {
 
     public DuplicateResourceException(String resourceType, String field, String value) {
-        super("Resource '" + resourceType + "' with " + field + ": " + value + "already exists");
+        super("Resource '" + resourceType + "' with " + field + ": " + value + " already exists");
     }
 }
