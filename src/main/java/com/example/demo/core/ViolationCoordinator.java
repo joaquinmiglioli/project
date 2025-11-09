@@ -41,14 +41,7 @@ public class ViolationCoordinator {
     }
 
     private void onViolation(ViolationService.Violation v) {
-        if (v.type == ViolationService.Type.SERVICE_CALL) return;
 
-        FineType type = switch (v.type) {
-            case SPEEDING        -> FineType.SPEEDING;
-            case ILLEGAL_PARKING -> FineType.PARKING;
-            case RED_LIGHT       -> FineType.RED_LIGHT;
-            default              -> FineType.RED_LIGHT;
-        };
 
         Map<String,Object> meta = new HashMap<>();
 
@@ -60,7 +53,7 @@ public class ViolationCoordinator {
                     meta.put("limit", Integer.parseInt(m.group(2)));
                 }
             }
-            case ILLEGAL_PARKING -> {
+            case PARKING -> {
                 Matcher m = Pattern.compile("Stay\\s+(\\d+)s\\s*.*?\\(tol\\s+(\\d+)s\\)", Pattern.CASE_INSENSITIVE).matcher(v.details);
                 if (m.find()) {
                     meta.put("parkedSec", Integer.parseInt(m.group(1)));
@@ -73,7 +66,7 @@ public class ViolationCoordinator {
         String photoFile = devices.Photo.randomFinePhotoFilename();
 
         // calcula, inserta en DB y setea id/barcode dentro del objeto Fine
-        Fine fine = issuer.issue(type, v.deviceId, photoFile, meta);
+        Fine fine = issuer.issue(v.type, v.deviceId, photoFile, meta);
 
         // genera PDF directo desde Fine
         Path outDir = Path.of(System.getProperty("user.dir"), "fines");
