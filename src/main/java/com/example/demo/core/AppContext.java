@@ -6,8 +6,6 @@ import com.example.demo.runtime.SnapshotSync;
 
 import com.example.demo.services.TrafficLightCycleService;
 import com.example.demo.services.ViolationService;
-import com.example.demo.core.ViolationSimulator;
-import com.example.demo.core.DeviceFailureSimulator;
 
 import cars.CarService;
 import fines.FineIssuer;

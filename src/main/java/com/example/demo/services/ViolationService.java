@@ -4,17 +4,12 @@ package com.example.demo.services;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.springframework.stereotype.Service;
-
+import fines.FineType;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 
 //mantiene la lista de violaciones
 
@@ -23,7 +18,6 @@ import java.util.stream.Collectors;
 public class ViolationService {
 
 
-    public enum Type { SPEEDING, ILLEGAL_PARKING, RED_LIGHT, SERVICE_CALL }
 
 
     public static final class Violation implements Serializable {
@@ -31,10 +25,10 @@ public class ViolationService {
         public final String deviceId;
         public final String plate;
         public final String details;
-        public final Type type;
+        public final FineType type;
 
 
-        public Violation(Instant ts, String deviceId, String plate, Type type, String details){
+        public Violation(Instant ts, String deviceId, String plate, FineType type, String details){
             this.ts = ts;
             this.deviceId = deviceId;
             this.plate = plate;
@@ -55,9 +49,7 @@ public class ViolationService {
         public String  getDetails()   {
             return details;
         }
-        public Type    getType()      {
-            return type;
-        }
+        public FineType getType(){return type;}
     }
 
 
@@ -78,7 +70,7 @@ public class ViolationService {
                         Instant.ofEpochSecond(s.epochSeconds),
                         s.deviceId,
                         s.plate,
-                        Type.valueOf(s.type),
+                        FineType.valueOf(s.type),
                         s.details
                 ));
             }
@@ -104,27 +96,16 @@ public class ViolationService {
 
 
     public void recordSpeeding(String dev, String plate, int speed, int limit) {
-        items.add(new Violation(Instant.now(), dev, plate, Type.SPEEDING,
+        items.add(new Violation(Instant.now(), dev, plate, FineType.SPEEDING,
                 "Speed " + speed + " (limit " + limit + ")"));
     }
     public void recordIllegalParking(String dev, String plate, int stay, int tol) {
-        items.add(new Violation(Instant.now(), dev, plate, Type.ILLEGAL_PARKING,
+        items.add(new Violation(Instant.now(), dev, plate, FineType.PARKING,
                 "Stay " + stay + "s (tol " + tol + "s)"));
     }
     public void recordRedLight(String dev, String plate, String dir) {
-        items.add(new Violation(Instant.now(), dev, plate, Type.RED_LIGHT, dir));
-    }
-    public void recordServiceCall(String camId, String service) {
-        items.add(new Violation(Instant.now(), camId, "-", Type.SERVICE_CALL, service));
+        items.add(new Violation(Instant.now(), dev, plate, FineType.RED_LIGHT, dir));
     }
 
 
-    public Map<String, Long> countByDevice() {
-        return items.stream().collect(Collectors.groupingBy(v -> v.deviceId,
-                LinkedHashMap::new, Collectors.counting()));
-    }
-    public Map<String, Long> countByCategory(Function<String,String> categoryFn) {
-        return items.stream().collect(Collectors.groupingBy(v -> categoryFn.apply(v.deviceId),
-                LinkedHashMap::new, Collectors.counting()));
-    }
 }

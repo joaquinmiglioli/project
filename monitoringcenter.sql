@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2WZRsbMgOiQTLQBw1cgKOnCMvG8vAA6IiU63LUL3oyoylED2c8TQT8RryYkYTUk
+\restrict LYcbT1FCK6XWMrdvxW9qf337eOopKDJTBqTpOVZ7guN5pECiyDMyvUSBAPxC2zm
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
 
--- Started on 2025-11-07 11:35:53
+-- Started on 2025-11-07 22:24:10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -359,10 +359,10 @@ INSERT INTO public.cars VALUES (51, 1, 54, 'BAA406', 'Josefina Soler', 'Talbot 9
 -- Data for Name: fines; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.fines VALUES (2, '2025-11-07 01:10:50.627682-03', 'PARKING', 30000.00, 2, 'Parking Camera 1', 'FinesPhoto5.jpeg', '000002000003000000', 22);
-INSERT INTO public.fines VALUES (3, '2025-11-07 01:11:15.256308-03', 'PARKING', 32000.00, 2, 'Parking Camera 2', 'FinesPhoto7.jpeg', '000003000003200000', 46);
-INSERT INTO public.fines VALUES (4, '2025-11-07 01:11:24.968737-03', 'PARKING', 32000.00, 2, 'Parking Camera 2', 'FinesPhoto6.jpg', '000004000003200000', 7);
-INSERT INTO public.fines VALUES (1, '2025-11-07 01:10:29.642581-03', 'SPEEDING', 76043.75, 6, 'Radar 5', 'FinesPhoto6.jpg', '000001000007604375', 13);
+INSERT INTO public.fines VALUES (1, '2025-11-07 11:42:59.23598-03', 'PARKING', 30000.00, 2, 'Parking Camera 2', 'FinesPhoto6.jpg', '000001000003000000', 28);
+INSERT INTO public.fines VALUES (2, '2025-11-07 11:43:31.95605-03', 'SPEEDING', 57500.00, 4, 'Radar 3', 'FinesPhoto6.jpg', '000002000005750000', 5);
+INSERT INTO public.fines VALUES (3, '2025-11-07 22:13:31.18941-03', 'RED_LIGHT', 80000.00, 5, 'Semaphore 3', 'FinesPhoto6.jpg', '000003000008000000', 38);
+INSERT INTO public.fines VALUES (4, '2025-11-07 22:13:50.479793-03', 'RED_LIGHT', 80000.00, 5, 'Semaphore 30', 'FinesPhoto11.jpeg', '000004000008000000', 1);
 
 
 --
@@ -530,11 +530,11 @@ ALTER TABLE ONLY public.fines
     ADD CONSTRAINT fines_carid_fkey FOREIGN KEY (carid) REFERENCES public.cars(carid);
 
 
--- Completed on 2025-11-07 11:35:53
+-- Completed on 2025-11-07 22:24:11
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2WZRsbMgOiQTLQBw1cgKOnCMvG8vAA6IiU63LUL3oyoylED2c8TQT8RryYkYTUk
+\unrestrict LYcbT1FCK6XWMrdvxW9qf337eOopKDJTBqTpOVZ7guN5pECiyDMyvUSBAPxC2zm
 
